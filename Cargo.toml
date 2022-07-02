@@ -1,0 +1,13 @@
+[package]
+name = "jornet"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+actix-web = "4.1.0"
+actix-web-httpauth = "0.6.0"
+biscuit-auth = "2.2.0"
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+
+[dev-dependencies]
+reqwest = "0.11"
