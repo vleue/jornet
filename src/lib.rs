@@ -15,7 +15,7 @@ use actix_web_httpauth::{
 };
 use biscuit_auth::{
     builder::{Fact, Term},
-    Biscuit, KeyPair,
+    Authorizer, Biscuit, KeyPair,
 };
 use chrono::{Duration, Utc};
 
@@ -26,10 +26,7 @@ async fn health_check() -> impl Responder {
 async fn get_valid_token(root: Data<BiscuitSec>, name: web::Path<String>) -> impl Responder {
     let mut builder = Biscuit::builder(&root.keypair);
     builder
-        .add_authority_fact(Fact::new(
-            "user".to_string(),
-            vec![Term::Str(name.to_string())],
-        ))
+        .add_authority_fact(User(name.to_string()).as_biscuit_fact())
         .unwrap();
 
     builder
@@ -53,6 +50,24 @@ async fn hello(msg: ReqData<User>) -> impl Responder {
 #[derive(Clone, Debug)]
 struct User(String);
 
+impl User {
+    fn as_biscuit_fact(&self) -> Fact {
+        Fact::new("user".to_string(), vec![Term::Str(self.0.to_string())])
+    }
+
+    fn from_biscuit(biscuit: &Biscuit) -> Result<Self, ()> {
+        let mut authorizer = biscuit.authorizer().map_err(|_| ())?;
+        Self::from_authorizer(authorizer)
+    }
+
+    fn from_authorizer(mut authorizer: Authorizer) -> Result<Self, ()> {
+        let res: Vec<(String,)> = authorizer
+            .query("data($name) <- user($name)")
+            .map_err(|_| ())?;
+        Ok(User(res.get(0).ok_or(())?.0.clone()))
+    }
+}
+
 async fn validator(req: ServiceRequest, credentials: BearerAuth) -> Result<ServiceRequest, Error> {
     let root = req.app_data::<Data<BiscuitSec>>().unwrap();
     let biscuit = Biscuit::from_base64(credentials.token(), |_| root.keypair.public())
@@ -60,21 +75,18 @@ async fn validator(req: ServiceRequest, credentials: BearerAuth) -> Result<Servi
 
     let user = authorize(&biscuit).map_err(|_| AuthenticationError::from(Config::default()))?;
 
-    req.extensions_mut().insert(User(user.to_owned()));
+    req.extensions_mut().insert(user);
     Ok(req)
 }
 
-fn authorize(token: &Biscuit) -> Result<String, ()> {
+fn authorize(token: &Biscuit) -> Result<User, ()> {
     let mut authorizer = token.authorizer().map_err(|_| ())?;
 
     authorizer.set_time();
-    authorizer.allow().map_err(|_| ())?;
-    authorizer.authorize().map_err(|_| ())?;
+    dbg!(authorizer.allow()).map_err(|_| ())?;
+    dbg!(authorizer.authorize()).map_err(|_| ())?;
 
-    let res: Vec<(String,)> = authorizer
-        .query("data($name) <- user($name)")
-        .map_err(|_| ())?;
-    Ok(res.get(0).ok_or(())?.0.clone())
+    User::from_authorizer(authorizer)
 }
 
 #[derive(Clone)]
