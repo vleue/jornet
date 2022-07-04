@@ -1,8 +1,4 @@
-use std::{
-    net::TcpListener,
-    ops::Add,
-    time::{Duration, SystemTime},
-};
+use std::net::TcpListener;
 
 use actix_web::{
     dev::{Server, ServiceRequest},
@@ -21,6 +17,7 @@ use biscuit_auth::{
     builder::{Fact, Term},
     Biscuit, KeyPair,
 };
+use chrono::{Duration, Utc};
 
 async fn health_check() -> impl Responder {
     HttpResponse::Ok().finish()
@@ -34,22 +31,14 @@ async fn get_valid_token(root: Data<BiscuitSec>, name: web::Path<String>) -> imp
             vec![Term::Str(name.to_string())],
         ))
         .unwrap();
-    builder
-        .add_authority_fact(Fact::new(
-            "expiration".to_string(),
-            vec![Term::Date(
-                SystemTime::now()
-                    .add(Duration::from_secs(600))
-                    .duration_since(SystemTime::UNIX_EPOCH)
-                    .unwrap()
-                    .as_secs(),
-            )],
-        ))
-        .unwrap();
 
     builder
         .add_authority_check(
-            r#"check if time($time), expiration($expiration), $time < $expiration"#,
+            format!(
+                r#"check if time($time), $time < {}"#,
+                dbg!((Utc::now() + Duration::seconds(600)).to_rfc3339())
+            )
+            .as_str(),
         )
         .unwrap();
 
