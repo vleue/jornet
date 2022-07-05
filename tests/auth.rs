@@ -1,12 +1,12 @@
-use std::net::TcpListener;
+mod helper;
 
 #[tokio::test]
 async fn not_authenticated() {
-    let address = spawn_app();
+    let app = helper::spawn_app().await;
     let client = reqwest::Client::new();
 
     let response = client
-        .get(&format!("{}/api/hello", address))
+        .get(&format!("{}/api/hello", app.address))
         .send()
         .await
         .expect("Failed to execute request.");
@@ -17,25 +17,31 @@ async fn not_authenticated() {
 
 #[tokio::test]
 async fn get_test_token() {
-    let address = spawn_app();
+    let app = helper::spawn_app().await;
     let client = reqwest::Client::new();
 
     let response = client
-        .get(&format!("{}/get_valid_token/hola", address))
+        .get(&format!("{}/get_valid_token/hola", app.address))
         .send()
         .await
         .expect("Failed to execute request.");
 
     assert!(response.status().is_success());
+
+    let saved = sqlx::query!("SELECT id, name FROM admins",)
+        .fetch_one(&app.db_pool)
+        .await
+        .expect("Failed to fetch saved subscription.");
+    assert_eq!(saved.name, "hola");
 }
 
 #[tokio::test]
 async fn use_test_token() {
-    let address = spawn_app();
+    let app = helper::spawn_app().await;
     let client = reqwest::Client::new();
 
     let token = client
-        .get(&format!("{}/get_valid_token/hola", address))
+        .get(&format!("{}/get_valid_token/hola", app.address))
         .send()
         .await
         .expect("Failed to execute request.")
@@ -44,19 +50,11 @@ async fn use_test_token() {
         .expect("got body");
 
     let response = client
-        .get(&format!("{}/api/hello", address))
+        .get(&format!("{}/api/hello", app.address))
         .bearer_auth(token)
         .send()
         .await
         .expect("Failed to execute request.");
 
     assert!(response.status().is_success());
-}
-
-fn spawn_app() -> String {
-    let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind random port");
-    let port = listener.local_addr().unwrap().port();
-    let server = jornet::run(listener).expect("Failed to bind address");
-    let _ = tokio::spawn(server);
-    format!("http://127.0.0.1:{}", port)
 }

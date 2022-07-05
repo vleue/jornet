@@ -8,33 +8,19 @@ use actix_web::{
 };
 use actix_web_httpauth::middleware::HttpAuthentication;
 use biscuit_auth::KeyPair;
+use sqlx::PgPool;
 
+pub mod configuration;
 mod domains;
 
-struct BiscuitSec {
-    keypair: KeyPair,
-}
-
-impl BiscuitSec {
-    fn from(kp: KeyPair) -> BiscuitSec {
-        Self { keypair: kp }
-    }
-}
-
-impl Clone for BiscuitSec {
-    fn clone(&self) -> Self {
-        Self {
-            keypair: KeyPair::from(self.keypair.private().clone()),
-        }
-    }
-}
-
-pub fn run(listener: TcpListener) -> Result<Server, std::io::Error> {
-    let root = Data::new(BiscuitSec::from(KeyPair::new()));
+pub fn run(listener: TcpListener, connection_pool: PgPool) -> Result<Server, std::io::Error> {
+    let root = Data::new(KeyPair::new());
+    let connection = Data::new(connection_pool);
 
     let server = HttpServer::new(move || {
         App::new()
-            .app_data(Data::clone(&root))
+            .app_data(connection.clone())
+            .app_data(root.clone())
             .wrap(Logger::default())
             .route(
                 "/health_check",
@@ -48,7 +34,8 @@ pub fn run(listener: TcpListener) -> Result<Server, std::io::Error> {
                 web::scope("/api")
                     .app_data(Data::clone(&root))
                     .wrap(HttpAuthentication::bearer(domains::admin::validator))
-                    .route("/hello", web::get().to(domains::admin::hello)),
+                    .route("/hello", web::get().to(domains::admin::hello))
+                    .route("/goodbye", web::delete().to(domains::admin::goodbye)),
             )
     })
     .listen(listener)?

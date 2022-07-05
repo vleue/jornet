@@ -1,12 +1,18 @@
 use std::net::TcpListener;
 
-use jornet::run;
+use jornet::{configuration::get_configuration, run};
+use sqlx::PgPool;
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
-    std::env::set_var("RUST_LOG", "debug");
+    let configuration = get_configuration();
 
-    let address = format!("{}:{}", "127.0.0.1", 8080);
+    let address = format!("{}:{}", "127.0.0.1", configuration.application_port);
     let listener = TcpListener::bind(&address)?;
-    run(listener)?.await
+
+    let connection_pool = PgPool::connect(&configuration.database.connection_string())
+        .await
+        .expect("Failed to connect to Postgres.");
+
+    run(listener, connection_pool)?.await
 }
