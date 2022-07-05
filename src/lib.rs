@@ -11,7 +11,7 @@ use biscuit_auth::KeyPair;
 use sqlx::PgPool;
 
 pub mod configuration;
-mod domains;
+pub mod domains;
 
 pub fn run(listener: TcpListener, connection_pool: PgPool) -> Result<Server, std::io::Error> {
     let root = Data::new(KeyPair::new());
@@ -27,15 +27,15 @@ pub fn run(listener: TcpListener, connection_pool: PgPool) -> Result<Server, std
                 web::get().to(domains::healthcheck::health_check),
             )
             .route(
-                "/get_valid_token/{name}",
-                web::get().to(domains::admin::get_valid_token),
+                "/test_bed/get_valid_token/{name}",
+                web::get().to(domains::test_bed::get_valid_token),
             )
             .service(
-                web::scope("/api")
+                web::scope("/test_bed")
                     .app_data(Data::clone(&root))
-                    .wrap(HttpAuthentication::bearer(domains::admin::validator))
-                    .route("/hello", web::get().to(domains::admin::hello))
-                    .route("/goodbye", web::delete().to(domains::admin::goodbye)),
+                    .wrap(HttpAuthentication::bearer(domains::test_bed::validator))
+                    .route("/hello", web::get().to(domains::test_bed::hello))
+                    .route("/goodbye", web::delete().to(domains::test_bed::goodbye)),
             )
     })
     .listen(listener)?

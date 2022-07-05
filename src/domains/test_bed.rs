@@ -12,8 +12,14 @@ use biscuit_auth::{
     Authorizer, Biscuit, KeyPair,
 };
 use chrono::{Duration, Utc};
+use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use uuid::Uuid;
+
+#[derive(Serialize, Deserialize)]
+pub struct TokenReply {
+    pub token: String,
+}
 
 pub(crate) async fn get_valid_token(
     root: Data<KeyPair>,
@@ -47,7 +53,9 @@ pub(crate) async fn get_valid_token(
                 .unwrap();
 
             let biscuit = builder.build().unwrap();
-            HttpResponse::Ok().body(biscuit.to_base64().unwrap())
+            HttpResponse::Ok().json(TokenReply {
+                token: biscuit.to_base64().unwrap(),
+            })
         }
         Err(_) => HttpResponse::InternalServerError().finish(),
     }

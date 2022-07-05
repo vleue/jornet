@@ -1,3 +1,5 @@
+use jornet::domains::test_bed::TokenReply;
+
 mod helper;
 
 #[tokio::test]
@@ -6,7 +8,7 @@ async fn not_authenticated() {
     let client = reqwest::Client::new();
 
     let response = client
-        .get(&format!("{}/api/hello", app.address))
+        .get(&format!("{}/test_bed/hello", app.address))
         .send()
         .await
         .expect("Failed to execute request.");
@@ -21,7 +23,7 @@ async fn get_test_token() {
     let client = reqwest::Client::new();
 
     let response = client
-        .get(&format!("{}/get_valid_token/hola", app.address))
+        .get(&format!("{}/test_bed/get_valid_token/hola", app.address))
         .send()
         .await
         .expect("Failed to execute request.");
@@ -41,17 +43,17 @@ async fn use_test_token() {
     let client = reqwest::Client::new();
 
     let token = client
-        .get(&format!("{}/get_valid_token/hola", app.address))
+        .get(&format!("{}/test_bed/get_valid_token/hola", app.address))
         .send()
         .await
         .expect("Failed to execute request.")
-        .text()
+        .json::<TokenReply>()
         .await
         .expect("got body");
 
     let response = client
-        .get(&format!("{}/api/hello", app.address))
-        .bearer_auth(token)
+        .get(&format!("{}/test_bed/hello", app.address))
+        .bearer_auth(token.token)
         .send()
         .await
         .expect("Failed to execute request.");
