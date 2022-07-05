@@ -57,10 +57,10 @@ impl User {
 
     fn from_biscuit(biscuit: &Biscuit) -> Result<Self, ()> {
         let mut authorizer = biscuit.authorizer().map_err(|_| ())?;
-        Self::from_authorizer(authorizer)
+        Self::from_authorizer(&mut authorizer)
     }
 
-    fn from_authorizer(mut authorizer: Authorizer) -> Result<Self, ()> {
+    fn from_authorizer(authorizer: &mut Authorizer) -> Result<Self, ()> {
         let res: Vec<(String,)> = authorizer
             .query("data($name) <- user($name)")
             .map_err(|_| ())?;
@@ -86,7 +86,7 @@ fn authorize(token: &Biscuit) -> Result<User, ()> {
     dbg!(authorizer.allow()).map_err(|_| ())?;
     dbg!(authorizer.authorize()).map_err(|_| ())?;
 
-    User::from_authorizer(authorizer)
+    User::from_authorizer(&mut authorizer)
 }
 
 #[derive(Clone)]
