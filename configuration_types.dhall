@@ -9,6 +9,7 @@ let DatabaseSettings : Type =
 let Settings : Type =
       { application_port    : Natural
       , database            : DatabaseSettings
+      , private_key         : Optional Text
       }
 
 in

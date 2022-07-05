@@ -1,9 +1,11 @@
+use biscuit_auth::{KeyPair, PrivateKey};
 use serde::Deserialize;
 
 #[derive(Deserialize)]
 pub struct Settings {
     pub database: DatabaseSettings,
     pub application_port: u16,
+    pub private_key: Option<String>,
 }
 #[derive(Deserialize)]
 pub struct DatabaseSettings {
@@ -15,9 +17,8 @@ pub struct DatabaseSettings {
 }
 
 pub fn get_configuration() -> Settings {
-    serde_dhall::from_file("configuration.dhall")
-        .parse()
-        .unwrap()
+    let file = std::env::var("CONFIGURATION").unwrap_or_else(|_| "configuration.dhall".to_string());
+    serde_dhall::from_file(file).parse().unwrap()
 }
 
 impl DatabaseSettings {
@@ -33,5 +34,16 @@ impl DatabaseSettings {
             "postgres://{}:{}@{}:{}",
             self.username, self.password, self.host, self.port
         )
+    }
+}
+
+impl Settings {
+    pub fn get_keypair(&self) -> KeyPair {
+        self.private_key
+            .as_ref()
+            .and_then(|pk_string| base64::decode(pk_string).ok())
+            .and_then(|pk_bytes| PrivateKey::from_bytes(&pk_bytes).ok())
+            .map(|pk| KeyPair::from(pk))
+            .unwrap_or_else(|| KeyPair::new())
     }
 }

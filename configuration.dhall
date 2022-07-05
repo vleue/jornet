@@ -11,6 +11,7 @@ let database: types.DatabaseSettings =
 let configuration: types.Settings = 
     { application_port  = 8080
     , database          = database
+    , private_key       = None Text
     }
 
 in configuration

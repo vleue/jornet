@@ -7,14 +7,15 @@ use actix_web::{
     App, HttpServer,
 };
 use actix_web_httpauth::middleware::HttpAuthentication;
-use biscuit_auth::KeyPair;
+use configuration::get_configuration;
 use sqlx::PgPool;
 
 pub mod configuration;
 pub mod domains;
 
 pub fn run(listener: TcpListener, connection_pool: PgPool) -> Result<Server, std::io::Error> {
-    let root = Data::new(KeyPair::new());
+    let config = get_configuration();
+    let root = Data::new(dbg!(config.get_keypair()));
     let connection = Data::new(connection_pool);
 
     let server = HttpServer::new(move || {
