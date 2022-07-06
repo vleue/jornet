@@ -1,4 +1,4 @@
-use jornet::domains::admins::TokenReply;
+use jornet_server::domains::admins::TokenReply;
 
 mod helper;
 

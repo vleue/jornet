@@ -1,6 +1,6 @@
 use std::net::TcpListener;
 
-use jornet::{configuration::get_configuration, run};
+use jornet_server::{configuration::get_configuration, run};
 use sqlx::PgPool;
 
 #[tokio::main]

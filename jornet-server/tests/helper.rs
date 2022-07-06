@@ -1,6 +1,6 @@
 use std::net::TcpListener;
 
-use jornet::configuration::{get_configuration, DatabaseSettings};
+use jornet_server::configuration::{get_configuration, DatabaseSettings};
 use sqlx::{Connection, Executor, PgConnection, PgPool};
 use uuid::Uuid;
 
@@ -17,7 +17,8 @@ pub async fn spawn_app() -> TestApp {
     configuration.database.database_name = Uuid::new_v4().to_string();
     let connection_pool = configure_database(&configuration.database).await;
 
-    let server = jornet::run(listener, connection_pool.clone()).expect("Failed to bind address");
+    let server =
+        jornet_server::run(listener, connection_pool.clone()).expect("Failed to bind address");
     let _ = tokio::spawn(server);
 
     TestApp {
