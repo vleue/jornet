@@ -43,7 +43,7 @@ impl Settings {
             .as_ref()
             .and_then(|pk_string| base64::decode(pk_string).ok())
             .and_then(|pk_bytes| PrivateKey::from_bytes(&pk_bytes).ok())
-            .map(|pk| KeyPair::from(pk))
-            .unwrap_or_else(|| KeyPair::new())
+            .map(KeyPair::from)
+            .unwrap_or_else(KeyPair::new)
     }
 }
