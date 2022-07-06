@@ -5,7 +5,7 @@ use sqlx::PgPool;
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
-    let configuration = dbg!(get_configuration());
+    let configuration = get_configuration();
 
     let address = format!(
         "{}:{}",
