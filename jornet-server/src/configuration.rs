@@ -1,13 +1,13 @@
 use biscuit_auth::{KeyPair, PrivateKey};
 use serde::Deserialize;
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 pub struct Settings {
     pub database: DatabaseSettings,
     pub application_port: u16,
     pub private_key: Option<String>,
 }
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 pub struct DatabaseSettings {
     pub username: String,
     pub password: String,
