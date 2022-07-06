@@ -1,4 +1,4 @@
-use jornet::domains::test_bed::TokenReply;
+use jornet::domains::admins::TokenReply;
 
 mod helper;
 
@@ -8,7 +8,7 @@ async fn not_authenticated() {
     let client = reqwest::Client::new();
 
     let response = client
-        .get(&format!("{}/test_bed/hello", app.address))
+        .get(&format!("{}/admin/hello", app.address))
         .send()
         .await
         .expect("Failed to execute request.");
@@ -23,18 +23,17 @@ async fn get_test_token() {
     let client = reqwest::Client::new();
 
     let response = client
-        .get(&format!("{}/test_bed/get_valid_token/hola", app.address))
+        .post(&format!("{}/auth/test", app.address))
         .send()
         .await
         .expect("Failed to execute request.");
 
     assert!(response.status().is_success());
 
-    let saved = sqlx::query!("SELECT id, name FROM admins",)
+    sqlx::query!("SELECT id FROM admins",)
         .fetch_one(&app.db_pool)
         .await
         .expect("Failed to fetch saved subscription.");
-    assert_eq!(saved.name, "hola");
 }
 
 #[tokio::test]
@@ -43,7 +42,7 @@ async fn use_test_token() {
     let client = reqwest::Client::new();
 
     let token = client
-        .get(&format!("{}/test_bed/get_valid_token/hola", app.address))
+        .post(&format!("{}/auth/test", app.address))
         .send()
         .await
         .expect("Failed to execute request.")
@@ -52,7 +51,7 @@ async fn use_test_token() {
         .expect("got body");
 
     let response = client
-        .get(&format!("{}/test_bed/hello", app.address))
+        .get(&format!("{}/admin/hello", app.address))
         .bearer_auth(token.token)
         .send()
         .await
