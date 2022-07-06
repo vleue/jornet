@@ -1,4 +1,6 @@
 use jornet_server::domains::admins::TokenReply;
+use serde::Serialize;
+use uuid::Uuid;
 
 mod helper;
 
@@ -17,6 +19,11 @@ async fn not_authenticated() {
     assert_eq!(Some(0), response.content_length());
 }
 
+#[derive(Serialize)]
+struct UuidInput {
+    uuid: Uuid,
+}
+
 #[tokio::test]
 async fn get_test_token() {
     let app = helper::spawn_app().await;
@@ -24,6 +31,9 @@ async fn get_test_token() {
 
     let response = client
         .post(&format!("{}/auth/test", app.address))
+        .json(&UuidInput {
+            uuid: Uuid::new_v4(),
+        })
         .send()
         .await
         .expect("Failed to execute request.");
@@ -43,6 +53,9 @@ async fn use_test_token() {
 
     let token = client
         .post(&format!("{}/auth/test", app.address))
+        .json(&UuidInput {
+            uuid: Uuid::new_v4(),
+        })
         .send()
         .await
         .expect("Failed to execute request.")
