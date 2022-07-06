@@ -7,7 +7,15 @@ pub struct Settings {
     pub application_host: String,
     pub application_port: u16,
     pub private_key: Option<String>,
+    pub github_admin_app: OAuth,
 }
+
+#[derive(Deserialize, Debug)]
+pub struct OAuth {
+    pub client_id: String,
+    pub client_secret: String,
+}
+
 #[derive(Deserialize, Debug)]
 pub struct DatabaseSettings {
     pub username: String,
