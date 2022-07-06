@@ -32,11 +32,11 @@ trait BiscuitFact: Sized {
 
 impl BiscuitFact for AdminAccount {
     fn as_biscuit_fact(&self) -> Fact {
-        Fact::new("id".to_string(), vec![Term::Str(self.id.to_string())])
+        Fact::new("user".to_string(), vec![Term::Str(self.id.to_string())])
     }
 
     fn from_authorizer(authorizer: &mut Authorizer) -> Result<Self, ()> {
-        let res: Vec<(String,)> = authorizer.query("data($id) <- id($id)").map_err(|_| ())?;
+        let res: Vec<(String,)> = authorizer.query("data($id) <- user($id)").map_err(|_| ())?;
         Ok(AdminAccount {
             id: Uuid::parse_str(res.get(0).ok_or(())?.0.as_str()).map_err(|_| ())?,
         })
