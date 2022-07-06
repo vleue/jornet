@@ -34,9 +34,8 @@ then
       postgres -N 1000
       # ^ Increased maximum number of connections for testing purposes
   sleep 10
+  docker ps
 fi
-
-docker ps
 
 export DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@localhost:${DB_PORT}/${DB_NAME}
 sqlx database create
