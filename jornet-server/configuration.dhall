@@ -10,7 +10,8 @@ let database: types.DatabaseSettings =
 
 in
 
-{ application_port  = env:PORT ? 8080
+{ application_host  = env:HOST ? "127.0.0.1"
+, application_port  = env:PORT ? 8080
 , database          = database
 , private_key       = Some (env:BISCUIT_KEY as Text) ? Some (./private_key) ? None Text
 }: types.Settings

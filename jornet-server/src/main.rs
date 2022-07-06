@@ -5,9 +5,12 @@ use sqlx::PgPool;
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
-    let configuration = dbg!(get_configuration());
+    let configuration = get_configuration();
 
-    let address = format!("{}:{}", "127.0.0.1", configuration.application_port);
+    let address = format!(
+        "{}:{}",
+        configuration.application_host, configuration.application_port
+    );
     let listener = TcpListener::bind(&address)?;
 
     let connection_pool = PgPool::connect(&configuration.database.connection_string())

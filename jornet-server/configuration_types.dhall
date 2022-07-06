@@ -7,7 +7,8 @@ let DatabaseSettings : Type =
       }
 
 let Settings : Type =
-      { application_port    : Natural
+      { application_host    : Text
+      , application_port    : Natural
       , database            : DatabaseSettings
       , private_key         : Optional Text
       }
