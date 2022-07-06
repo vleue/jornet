@@ -51,7 +51,7 @@ async fn use_test_token() {
         .expect("got body");
 
     let response = client
-        .get(&format!("{}/admin/hello", app.address))
+        .get(&format!("{}/admin/whoami", app.address))
         .bearer_auth(token.token)
         .send()
         .await
