@@ -30,7 +30,7 @@ fn main() {
             let output = if dhall {
                 format!("\"{}\"", base64::encode(private_key.to_bytes()))
             } else {
-                base64::encode(private_key.to_bytes()).to_string()
+                base64::encode(private_key.to_bytes())
             };
             println!("{}", output);
         }
