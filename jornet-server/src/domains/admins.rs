@@ -66,25 +66,50 @@ fn create_biscuit(uuid: Uuid, root: &KeyPair) -> Biscuit {
     builder.build().unwrap()
 }
 
-async fn new_account(root: web::Data<KeyPair>, connection: web::Data<PgPool>) -> impl Responder {
-    let uuid = Uuid::new_v4();
+#[derive(Deserialize)]
+struct UuidInput {
+    uuid: Uuid,
+}
+
+async fn new_account(
+    root: web::Data<KeyPair>,
+    connection: web::Data<PgPool>,
+    uuid: web::Json<UuidInput>,
+) -> impl Responder {
     match sqlx::query!(
         r#"
         INSERT INTO admins (id) VALUES ($1)
         "#,
-        uuid,
+        uuid.uuid,
     )
     .execute(connection.get_ref())
     .await
     {
         Ok(_) => {
-            let biscuit = create_biscuit(uuid, &root);
+            let biscuit = create_biscuit(uuid.uuid, &root);
 
             HttpResponse::Ok().json(TokenReply {
                 token: biscuit.to_base64().unwrap(),
             })
         }
-        Err(_) => HttpResponse::InternalServerError().finish(),
+        Err(_) => {
+            match sqlx::query!(
+                "SELECT admin_id FROM admins_github where admin_id = $1",
+                uuid.uuid
+            )
+            .fetch_one(connection.get_ref())
+            .await
+            {
+                Ok(_) => HttpResponse::InternalServerError().finish(),
+                Err(_) => {
+                    let biscuit = create_biscuit(uuid.uuid, &root);
+
+                    HttpResponse::Ok().json(TokenReply {
+                        token: biscuit.to_base64().unwrap(),
+                    })
+                }
+            }
+        }
     }
 }
 
@@ -160,9 +185,12 @@ async fn oauth_callback(
         .await
         .unwrap();
 
-    let uuid = match sqlx::query!("SELECT admin_id FROM admins_github",)
-        .fetch_one(connection.get_ref())
-        .await
+    let uuid = match sqlx::query!(
+        "SELECT admin_id FROM admins_github WHERE id = $1",
+        user.id as i64
+    )
+    .fetch_one(connection.get_ref())
+    .await
     {
         Ok(record) => record.admin_id,
         _ => {
