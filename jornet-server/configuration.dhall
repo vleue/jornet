@@ -10,8 +10,8 @@ let database: types.DatabaseSettings =
 
 let github_admin_app: types.OAuth = 
     ./github_admin_app.dhall ?
-    { client_id     = env:GITHUB_ADMIN_CLIENT_ID as Text
-    , client_secret    = env:GITHUB_ADMIN_CLIENT_SECRET as Text
+    { client_id     = env:GITHUB_ADMIN_CLIENT_ID as Text ? "disabled"
+    , client_secret    = env:GITHUB_ADMIN_CLIENT_SECRET as Text ? "disabled"
     }
 
 in
