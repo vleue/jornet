@@ -24,7 +24,7 @@ pub struct TokenReply {
     pub token: String,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Serialize)]
 struct AdminAccount {
     id: Uuid,
 }
@@ -47,25 +47,6 @@ impl BiscuitFact for AdminAccount {
     }
 }
 
-fn create_biscuit(uuid: Uuid, root: &KeyPair) -> Biscuit {
-    let mut builder = Biscuit::builder(root);
-    builder
-        .add_authority_fact(AdminAccount { id: uuid }.as_biscuit_fact())
-        .unwrap();
-
-    builder
-        .add_authority_check(
-            format!(
-                r#"check if time($time), $time < {}"#,
-                (Utc::now() + Duration::seconds(600)).to_rfc3339()
-            )
-            .as_str(),
-        )
-        .unwrap();
-
-    builder.build().unwrap()
-}
-
 #[derive(Deserialize)]
 struct UuidInput {
     uuid: Uuid,
@@ -76,41 +57,22 @@ async fn new_account(
     connection: web::Data<PgPool>,
     uuid: web::Json<UuidInput>,
 ) -> impl Responder {
-    match sqlx::query!(
-        r#"
-        INSERT INTO admins (id) VALUES ($1)
-        "#,
-        uuid.uuid,
-    )
-    .execute(connection.get_ref())
-    .await
-    {
-        Ok(_) => {
-            let biscuit = create_biscuit(uuid.uuid, &root);
-
-            HttpResponse::Ok().json(TokenReply {
-                token: biscuit.to_base64().unwrap(),
-            })
+    let account = AdminAccount { id: uuid.uuid };
+    match (
+        account.exist(&connection).await,
+        account.has_github(&connection).await,
+    ) {
+        (_, Some(_)) => return HttpResponse::InternalServerError().finish(),
+        (false, _) => {
+            account.create(&connection).await;
         }
-        Err(_) => {
-            match sqlx::query!(
-                "SELECT admin_id FROM admins_github where admin_id = $1",
-                uuid.uuid
-            )
-            .fetch_one(connection.get_ref())
-            .await
-            {
-                Ok(_) => HttpResponse::InternalServerError().finish(),
-                Err(_) => {
-                    let biscuit = create_biscuit(uuid.uuid, &root);
-
-                    HttpResponse::Ok().json(TokenReply {
-                        token: biscuit.to_base64().unwrap(),
-                    })
-                }
-            }
-        }
+        (true, _) => (),
     }
+
+    let biscuit = account.create_biscuit(root.as_ref());
+    HttpResponse::Ok().json(TokenReply {
+        token: biscuit.to_base64().unwrap(),
+    })
 }
 
 async fn validator(req: ServiceRequest, credentials: BearerAuth) -> Result<ServiceRequest, Error> {
@@ -144,7 +106,7 @@ pub struct GithubOauthResponse {
     access_token: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct GithubUser {
     login: String,
     id: u32,
@@ -185,41 +147,17 @@ async fn oauth_callback(
         .await
         .unwrap();
 
-    let uuid = match sqlx::query!(
-        "SELECT admin_id FROM admins_github WHERE id = $1",
-        user.id as i64
-    )
-    .fetch_one(connection.get_ref())
-    .await
-    {
-        Ok(record) => record.admin_id,
-        _ => {
-            let uuid = Uuid::new_v4();
-            sqlx::query!(
-                r#"
-                INSERT INTO admins (id) VALUES ($1)
-                "#,
-                uuid,
-            )
-            .execute(connection.get_ref())
-            .await
-            .unwrap();
-            sqlx::query!(
-                r#"
-                INSERT INTO admins_github (id, login, admin_id) VALUES ($1, $2, $3)
-                "#,
-                user.id as i64,
-                user.login,
-                uuid,
-            )
-            .execute(connection.get_ref())
-            .await
-            .unwrap();
-            uuid
-        }
+    let admin = if user.exist(&connection).await {
+        user.has_admin(&connection).await.unwrap()
+    } else {
+        let account = AdminAccount { id: Uuid::new_v4() };
+        account.create(&connection).await;
+        user.create(&account, &connection).await;
+        account
     };
+
     // TODO: redirect to another page, save a user in DB, add a biscuit
-    let biscuit = create_biscuit(uuid, &root);
+    let biscuit = admin.create_biscuit(&root);
 
     HttpResponse::Ok().json(TokenReply {
         token: biscuit.to_base64().unwrap(),
@@ -238,21 +176,110 @@ pub(crate) fn admins(kp: web::Data<KeyPair>) -> Scope {
         )
 }
 
+#[derive(Serialize)]
+struct Identity<'a> {
+    admin: &'a AdminAccount,
+    github: Option<GithubUser>,
+}
+
 async fn whoami(
     account: web::ReqData<AdminAccount>,
     connection: web::Data<PgPool>,
 ) -> impl Responder {
-    match sqlx::query!(
-        "SELECT login FROM admins_github where admin_id = $1",
-        account.id
-    )
-    .fetch_one(connection.get_ref())
-    .await
-    {
-        Ok(record) => format!(
-            "hello {:?}. Connected with your GitHub account {}",
-            account.id, record.login
-        ),
-        _ => format!("hello {:?}. You don't have an account linked", account.id),
+    HttpResponse::Ok().json(Identity {
+        admin: &account,
+        github: account.has_github(&connection).await,
+    })
+}
+
+impl AdminAccount {
+    async fn exist(&self, connection: &PgPool) -> bool {
+        sqlx::query!("SELECT id FROM admins WHERE id = $1", self.id)
+            .fetch_one(connection)
+            .await
+            .is_ok()
+    }
+    async fn has_github(&self, connection: &PgPool) -> Option<GithubUser> {
+        match sqlx::query!(
+            "SELECT id, login FROM admins_github WHERE admin_id = $1",
+            self.id
+        )
+        .fetch_one(connection)
+        .await
+        {
+            Ok(record) => Some(GithubUser {
+                login: record.login,
+                id: record.id as u32,
+            }),
+            _ => None,
+        }
+    }
+    async fn create(&self, connection: &PgPool) -> bool {
+        sqlx::query!(
+            r#"
+            INSERT INTO admins (id) VALUES ($1)
+            "#,
+            self.id,
+        )
+        .execute(connection)
+        .await
+        .is_ok()
+    }
+    fn create_biscuit(&self, root: &KeyPair) -> Biscuit {
+        let mut builder = Biscuit::builder(root);
+        builder
+            .add_authority_fact(AdminAccount { id: self.id }.as_biscuit_fact())
+            .unwrap();
+
+        builder
+            .add_authority_check(
+                format!(
+                    r#"check if time($time), $time < {}"#,
+                    (Utc::now() + Duration::seconds(600)).to_rfc3339()
+                )
+                .as_str(),
+            )
+            .unwrap();
+
+        builder.build().unwrap()
+    }
+}
+
+impl GithubUser {
+    async fn exist(&self, connection: &PgPool) -> bool {
+        sqlx::query!(
+            "SELECT id FROM admins_github WHERE id = $1 AND login = $2",
+            self.id as i32,
+            self.login
+        )
+        .fetch_one(connection)
+        .await
+        .is_ok()
+    }
+    async fn create(&self, account: &AdminAccount, connection: &PgPool) -> bool {
+        sqlx::query!(
+            r#"
+            INSERT INTO admins_github (id, login, admin_id) VALUES ($1, $2, $3)
+            "#,
+            self.id as i64,
+            self.login,
+            account.id,
+        )
+        .fetch_one(connection)
+        .await
+        .is_ok()
+    }
+    async fn has_admin(&self, connection: &PgPool) -> Option<AdminAccount> {
+        sqlx::query!(
+            "SELECT admin_id FROM admins_github WHERE id = $1 AND login = $2",
+            self.id as i32,
+            self.login
+        )
+        .fetch_one(connection)
+        .await
+        .map(|record| AdminAccount {
+            id: record.admin_id,
+        })
+        .ok()
     }
 }
