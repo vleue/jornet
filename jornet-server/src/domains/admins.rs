@@ -169,7 +169,7 @@ pub(crate) fn admins(kp: web::Data<KeyPair>) -> Scope {
         .route("auth/test", web::post().to(new_account))
         .route("/oauth/callback", web::get().to(oauth_callback))
         .service(
-            web::scope("admin")
+            web::scope("api/admin")
                 .app_data(kp)
                 .wrap(HttpAuthentication::bearer(validator))
                 .route("whoami", web::get().to(whoami)),

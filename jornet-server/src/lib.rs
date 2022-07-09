@@ -6,28 +6,27 @@ use actix_web::{
     web::{self, Data},
     App, HttpResponse, HttpServer, Responder, Result,
 };
-use configuration::{get_configuration, Settings};
+use configuration::get_configuration;
 use sqlx::PgPool;
 
 pub mod configuration;
 pub mod domains;
 
-async fn index(config: web::Data<Settings>) -> impl Responder {
-    HttpResponse::Ok().content_type("Text/Html").body(format!(
+async fn index() -> impl Responder {
+    HttpResponse::Ok().content_type("Text/Html").body(
         r#"
 <html>
 
 <head>
-    <title>Jornet Admin Panel</title>
+    <title>Jornet</title>
 </head>
 
-<body><a href="https://github.com/login/oauth/authorize?client_id={}">Authenticate with GitHub</a>
+<body><a href="admin">Connect</a>
 </body>
 
 </html>
     "#,
-        config.github_admin_app.client_id
-    ))
+    )
 }
 
 pub fn run(listener: TcpListener, connection_pool: PgPool) -> Result<Server, std::io::Error> {
@@ -46,6 +45,7 @@ pub fn run(listener: TcpListener, connection_pool: PgPool) -> Result<Server, std
                 "/health_check",
                 web::get().to(domains::healthcheck::health_check),
             )
+            .service(domains::admin_site::admin_site())
             .service(domains::admins::admins(root.clone()))
     })
     .listen(listener)?

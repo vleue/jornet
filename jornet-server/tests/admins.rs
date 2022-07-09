@@ -10,7 +10,7 @@ async fn not_authenticated() {
     let client = reqwest::Client::new();
 
     let response = client
-        .get(&format!("{}/admin/hello", app.address))
+        .get(&format!("{}/api/admin/whoami", app.address))
         .send()
         .await
         .expect("Failed to execute request.");
@@ -64,7 +64,7 @@ async fn use_test_token() {
         .expect("got body");
 
     let response = client
-        .get(&format!("{}/admin/whoami", app.address))
+        .get(&format!("{}/api/admin/whoami", app.address))
         .bearer_auth(token.token)
         .send()
         .await
