@@ -3,6 +3,7 @@ on:
     tags:        
       - jornet-server-v**
 
+jobs:
   fmt:
     name: Rustfmt
     runs-on: ubuntu-latest
