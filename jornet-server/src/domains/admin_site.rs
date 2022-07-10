@@ -17,9 +17,9 @@ pub(crate) fn admin_site() -> Scope {
 
                 let auth_valid = |cookie: &Cookie| {
                     Biscuit::from_base64(cookie.value(), |_| root.public())
-                        .map_err(|_| ())
+                        .ok()
                         .and_then(|b| authorize(&b))
-                        .is_ok()
+                        .is_some()
                 };
 
                 match (is_login_page, req.cookie(AUTH_COOKIE_KEY)) {

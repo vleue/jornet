@@ -39,7 +39,7 @@ pub struct AdminAccount {
 
 trait BiscuitFact: Sized {
     fn as_biscuit_fact(&self) -> Fact;
-    fn from_authorizer(authorizer: &mut Authorizer) -> Result<Self, ()>;
+    fn from_authorizer(authorizer: &mut Authorizer) -> Option<Self>;
 }
 
 impl BiscuitFact for AdminAccount {
@@ -47,10 +47,10 @@ impl BiscuitFact for AdminAccount {
         Fact::new("user".to_string(), vec![Term::Str(self.id.to_string())])
     }
 
-    fn from_authorizer(authorizer: &mut Authorizer) -> Result<Self, ()> {
-        let res: Vec<(String,)> = authorizer.query("data($id) <- user($id)").map_err(|_| ())?;
-        Ok(AdminAccount {
-            id: Uuid::parse_str(res.get(0).ok_or(())?.0.as_str()).map_err(|_| ())?,
+    fn from_authorizer(authorizer: &mut Authorizer) -> Option<Self> {
+        let res: Vec<(String,)> = authorizer.query("data($id) <- user($id)").ok()?;
+        Some(AdminAccount {
+            id: Uuid::parse_str(res.get(0)?.0.as_str()).ok()?,
         })
     }
 }
@@ -119,18 +119,18 @@ async fn validator(req: ServiceRequest, credentials: BearerAuth) -> Result<Servi
     let biscuit = Biscuit::from_base64(credentials.token(), |_| root.public())
         .map_err(|_| AuthenticationError::from(Config::default()))?;
 
-    let user = authorize(&biscuit).map_err(|_| AuthenticationError::from(Config::default()))?;
+    let user = authorize(&biscuit).ok_or(AuthenticationError::from(Config::default()))?;
 
     req.extensions_mut().insert(user);
     Ok(req)
 }
 
-pub fn authorize(token: &Biscuit) -> Result<AdminAccount, ()> {
-    let mut authorizer = token.authorizer().map_err(|_| ())?;
+pub fn authorize(token: &Biscuit) -> Option<AdminAccount> {
+    let mut authorizer = token.authorizer().ok()?;
 
     authorizer.set_time();
-    authorizer.allow().map_err(|_| ())?;
-    authorizer.authorize().map_err(|_| ())?;
+    authorizer.allow().map_err(|_| ()).ok()?;
+    authorizer.authorize().map_err(|_| ()).ok()?;
 
     AdminAccount::from_authorizer(&mut authorizer)
 }
@@ -195,7 +195,6 @@ async fn oauth_callback(
         account
     };
 
-    // TODO: redirect to another page, save a user in DB, add a biscuit
     let biscuit = admin.create_biscuit(&root);
 
     HttpResponse::Found()
