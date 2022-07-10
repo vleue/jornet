@@ -8,7 +8,6 @@ publish = false
 [dependencies]
 actix-web = "4.1"
 actix-web-httpauth = "0.6"
-actix-session = { version = "0.6", features = ["cookie-session"] }
 biscuit-auth = "2.2"
 chrono = "0.4"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }

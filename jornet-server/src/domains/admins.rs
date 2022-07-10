@@ -1,6 +1,13 @@
 use std::collections::HashMap;
 
-use actix_web::{dev::ServiceRequest, web, Error, HttpMessage, HttpResponse, Responder, Scope};
+use actix_web::{
+    cookie::{
+        time::{Duration, OffsetDateTime},
+        Cookie, SameSite,
+    },
+    dev::ServiceRequest,
+    web, Error, HttpMessage, HttpResponse, Responder, Scope,
+};
 use actix_web_httpauth::{
     extractors::{
         bearer::{BearerAuth, Config},
@@ -12,12 +19,14 @@ use biscuit_auth::{
     builder::{Fact, Term},
     Authorizer, Biscuit, KeyPair,
 };
-use chrono::{Duration, Utc};
+use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::configuration::Settings;
+
+use super::admin_site::AUTH_COOKIE_KEY;
 
 #[derive(Serialize, Deserialize)]
 pub struct TokenReply {
@@ -25,7 +34,7 @@ pub struct TokenReply {
 }
 
 #[derive(Clone, Serialize)]
-struct AdminAccount {
+pub struct AdminAccount {
     id: Uuid,
 }
 
@@ -52,7 +61,7 @@ struct UuidInput {
     uuid: Uuid,
 }
 
-async fn new_account(
+async fn by_uuid(
     root: web::Data<KeyPair>,
     connection: web::Data<PgPool>,
     uuid: web::Json<UuidInput>,
@@ -75,6 +84,37 @@ async fn new_account(
     })
 }
 
+async fn by_uuid_get(
+    root: web::Data<KeyPair>,
+    connection: web::Data<PgPool>,
+    uuid: web::Query<UuidInput>,
+) -> impl Responder {
+    let account = AdminAccount { id: uuid.uuid };
+    match (
+        account.exist(&connection).await,
+        account.has_github(&connection).await,
+    ) {
+        (_, Some(_)) => return HttpResponse::InternalServerError().finish(),
+        (false, _) => {
+            account.create(&connection).await;
+        }
+        (true, _) => (),
+    }
+
+    let biscuit = account.create_biscuit(root.as_ref());
+    HttpResponse::Found()
+        .cookie(
+            Cookie::build(AUTH_COOKIE_KEY, biscuit.to_base64().unwrap())
+                .secure(true)
+                .same_site(SameSite::Strict)
+                .expires(OffsetDateTime::now_utc() + Duration::seconds(600))
+                .path("/")
+                .finish(),
+        )
+        .insert_header(("Location", "/admin/"))
+        .finish()
+}
+
 async fn validator(req: ServiceRequest, credentials: BearerAuth) -> Result<ServiceRequest, Error> {
     let root = req.app_data::<web::Data<KeyPair>>().unwrap();
     let biscuit = Biscuit::from_base64(credentials.token(), |_| root.public())
@@ -86,7 +126,7 @@ async fn validator(req: ServiceRequest, credentials: BearerAuth) -> Result<Servi
     Ok(req)
 }
 
-fn authorize(token: &Biscuit) -> Result<AdminAccount, ()> {
+pub fn authorize(token: &Biscuit) -> Result<AdminAccount, ()> {
     let mut authorizer = token.authorizer().map_err(|_| ())?;
 
     authorizer.set_time();
@@ -159,14 +199,23 @@ async fn oauth_callback(
     // TODO: redirect to another page, save a user in DB, add a biscuit
     let biscuit = admin.create_biscuit(&root);
 
-    HttpResponse::Ok().json(TokenReply {
-        token: biscuit.to_base64().unwrap(),
-    })
+    HttpResponse::Found()
+        .cookie(
+            Cookie::build(AUTH_COOKIE_KEY, biscuit.to_base64().unwrap())
+                .secure(true)
+                .same_site(SameSite::Strict)
+                .expires(OffsetDateTime::now_utc() + Duration::seconds(600))
+                .path("/")
+                .finish(),
+        )
+        .insert_header(("Location", "/admin/"))
+        .finish()
 }
 
 pub(crate) fn admins(kp: web::Data<KeyPair>) -> Scope {
     web::scope("")
-        .route("auth/test", web::post().to(new_account))
+        .route("auth/by_uuid", web::post().to(by_uuid))
+        .route("auth/by_uuid", web::get().to(by_uuid_get))
         .route("/oauth/callback", web::get().to(oauth_callback))
         .service(
             web::scope("api/admin")
@@ -235,7 +284,7 @@ impl AdminAccount {
             .add_authority_check(
                 format!(
                     r#"check if time($time), $time < {}"#,
-                    (Utc::now() + Duration::seconds(600)).to_rfc3339()
+                    (Utc::now() + chrono::Duration::seconds(600)).to_rfc3339()
                 )
                 .as_str(),
             )
