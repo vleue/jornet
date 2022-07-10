@@ -21,7 +21,7 @@ async fn index() -> impl Responder {
     <title>Jornet</title>
 </head>
 
-<body><a href="admin">Connect</a>
+<body><a href="admin/">Connect</a>
 </body>
 
 </html>

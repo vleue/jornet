@@ -6,10 +6,11 @@ license = "MIT OR Apache-2.0"
 publish = false
 
 [dependencies]
-actix-web = "4.1.0"
-actix-web-httpauth = "0.6.0"
-biscuit-auth = "2.2.0"
-chrono = "0.4.19"
+actix-web = "4.1"
+actix-web-httpauth = "0.6"
+actix-session = { version = "0.6", features = ["cookie-session"] }
+biscuit-auth = "2.2"
+chrono = "0.4"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_dhall = "0.11"
@@ -18,7 +19,7 @@ base64 = "0.13"
 reqwest = { version = "0.11", features = ["json"] }
 
 [dependencies.sqlx]
-version = "0.6.0"
+version = "0.6"
 default-features = false
 features = [
     "runtime-actix-rustls",
@@ -29,5 +30,5 @@ features = [
 ]
 
 [dev-dependencies]
-sqlx = { version = "0.6.0", default-features = false, features = ["migrate"] }
+sqlx = { version = "0.6", default-features = false, features = ["migrate"] }
 
