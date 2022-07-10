@@ -122,7 +122,7 @@ fetch(
 
 async fn logout(req: HttpRequest) -> impl Responder {
     let mut cookie = req.cookie(AUTH_COOKIE_KEY).unwrap();
-    cookie.set_path("/");
+    cookie.set_path("/admin/");
     let mut response = HttpResponse::Found()
         .insert_header(("Location", "/admin/"))
         .finish();

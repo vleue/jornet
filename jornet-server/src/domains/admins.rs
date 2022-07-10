@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use actix_web::{
     cookie::{
         time::{format_description::well_known::Rfc3339, Duration, OffsetDateTime},
-        Cookie, SameSite,
+        Cookie,
     },
     dev::ServiceRequest,
     web, Error, HttpMessage, HttpResponse, Responder, Scope,
@@ -105,9 +105,8 @@ async fn by_uuid_get(
         .cookie(
             Cookie::build(AUTH_COOKIE_KEY, biscuit.to_base64().unwrap())
                 .secure(true)
-                .same_site(SameSite::Strict)
                 .expires(OffsetDateTime::now_utc() + Duration::seconds(600))
-                .path("/")
+                .path("/admin/")
                 .finish(),
         )
         .insert_header(("Location", "/admin/"))
@@ -201,9 +200,8 @@ async fn oauth_callback(
         .cookie(
             Cookie::build(AUTH_COOKIE_KEY, biscuit.to_base64().unwrap())
                 .secure(true)
-                .same_site(SameSite::Strict)
                 .expires(OffsetDateTime::now_utc() + Duration::seconds(600))
-                .path("/")
+                .path("/admin/")
                 .finish(),
         )
         .insert_header(("Location", "/admin/"))
