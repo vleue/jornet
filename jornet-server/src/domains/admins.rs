@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use actix_web::{
     cookie::{
-        time::{Duration, OffsetDateTime},
+        time::{format_description::well_known::Rfc3339, Duration, OffsetDateTime},
         Cookie, SameSite,
     },
     dev::ServiceRequest,
@@ -19,7 +19,6 @@ use biscuit_auth::{
     builder::{Fact, Term},
     Authorizer, Biscuit, KeyPair,
 };
-use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use uuid::Uuid;
@@ -284,7 +283,9 @@ impl AdminAccount {
             .add_authority_check(
                 format!(
                     r#"check if time($time), $time < {}"#,
-                    (Utc::now() + chrono::Duration::seconds(600)).to_rfc3339()
+                    (OffsetDateTime::now_utc() + Duration::seconds(600))
+                        .format(&Rfc3339)
+                        .unwrap()
                 )
                 .as_str(),
             )

@@ -9,7 +9,6 @@ publish = false
 actix-web = "4.1"
 actix-web-httpauth = "0.6"
 biscuit-auth = "2.2"
-chrono = "0.4"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_dhall = "0.11"
