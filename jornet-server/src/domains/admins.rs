@@ -119,7 +119,7 @@ async fn validator(req: ServiceRequest, credentials: BearerAuth) -> Result<Servi
     let biscuit = Biscuit::from_base64(credentials.token(), |_| root.public())
         .map_err(|_| AuthenticationError::from(Config::default()))?;
 
-    let user = authorize(&biscuit).ok_or(AuthenticationError::from(Config::default()))?;
+    let user = authorize(&biscuit).ok_or_else(|| AuthenticationError::from(Config::default()))?;
 
     req.extensions_mut().insert(user);
     Ok(req)
