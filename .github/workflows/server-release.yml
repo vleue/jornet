@@ -14,6 +14,8 @@ jobs:
           fetch-depth: 0
 
       - uses: 47ng/actions-clever-cloud@v1.1
+        with:
+          appID: app_451f9750-246e-4649-b419-7f3888fa2c69
         env:
           CLEVER_TOKEN: ${{ secrets.CLEVER_TOKEN }}
           CLEVER_SECRET: ${{ secrets.CLEVER_SECRET }}
