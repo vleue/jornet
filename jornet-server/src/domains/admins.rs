@@ -27,6 +27,8 @@ use crate::configuration::Settings;
 
 use super::admin_site::AUTH_COOKIE_KEY;
 
+const TOKEN_TTL: i64 = 600;
+
 #[derive(Serialize, Deserialize)]
 pub struct TokenReply {
     pub token: String,
@@ -105,7 +107,7 @@ async fn by_uuid_get(
         .cookie(
             Cookie::build(AUTH_COOKIE_KEY, biscuit.to_base64().unwrap())
                 .secure(true)
-                .expires(OffsetDateTime::now_utc() + Duration::seconds(600))
+                .expires(OffsetDateTime::now_utc() + Duration::seconds(TOKEN_TTL))
                 .path("/admin/")
                 .finish(),
         )
@@ -200,7 +202,7 @@ async fn oauth_callback(
         .cookie(
             Cookie::build(AUTH_COOKIE_KEY, biscuit.to_base64().unwrap())
                 .secure(true)
-                .expires(OffsetDateTime::now_utc() + Duration::seconds(600))
+                .expires(OffsetDateTime::now_utc() + Duration::seconds(TOKEN_TTL))
                 .path("/admin/")
                 .finish(),
         )
@@ -280,7 +282,7 @@ impl AdminAccount {
             .add_authority_check(
                 format!(
                     r#"check if time($time), $time < {}"#,
-                    (OffsetDateTime::now_utc() + Duration::seconds(600))
+                    (OffsetDateTime::now_utc() + Duration::seconds(TOKEN_TTL))
                         .format(&Rfc3339)
                         .unwrap()
                 )
