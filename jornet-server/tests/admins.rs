@@ -30,7 +30,7 @@ async fn get_test_token() {
     let client = reqwest::Client::new();
 
     let response = client
-        .post(&format!("{}/auth/by_uuid", app.address))
+        .post(&format!("{}/oauth/by_uuid", app.address))
         .json(&UuidInput {
             uuid: Uuid::new_v4(),
         })
@@ -52,7 +52,7 @@ async fn use_test_token() {
     let client = reqwest::Client::new();
 
     let token = client
-        .post(&format!("{}/auth/by_uuid", app.address))
+        .post(&format!("{}/oauth/by_uuid", app.address))
         .json(&UuidInput {
             uuid: Uuid::new_v4(),
         })
