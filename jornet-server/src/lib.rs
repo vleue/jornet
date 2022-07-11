@@ -1,10 +1,11 @@
 use std::net::TcpListener;
 
+use actix_files::NamedFile;
 use actix_web::{
     dev::Server,
     middleware::Logger,
     web::{self, Data},
-    App, HttpResponse, HttpServer, Responder, Result,
+    App, HttpServer, Responder, Result,
 };
 use configuration::get_configuration;
 use sqlx::PgPool;
@@ -12,21 +13,8 @@ use sqlx::PgPool;
 pub mod configuration;
 pub mod domains;
 
-async fn index() -> impl Responder {
-    HttpResponse::Ok().content_type("Text/Html").body(
-        r#"
-<html>
-
-<head>
-    <title>Jornet</title>
-</head>
-
-<body><a href="admin/">Connect</a>
-</body>
-
-</html>
-    "#,
-    )
+async fn spa() -> impl Responder {
+    NamedFile::open_async("./static/index.html").await
 }
 
 pub fn run(listener: TcpListener, connection_pool: PgPool) -> Result<Server, std::io::Error> {
@@ -40,13 +28,14 @@ pub fn run(listener: TcpListener, connection_pool: PgPool) -> Result<Server, std
             .app_data(root.clone())
             .app_data(config.clone())
             .wrap(Logger::default())
-            .route("/", web::get().to(index))
             .route(
                 "/health_check",
                 web::get().to(domains::healthcheck::health_check),
             )
-            .service(domains::admin_site::admin_site())
+            .service(domains::config::config(config.clone()))
+            .service(domains::oauth::oauth())
             .service(domains::admins::admins(root.clone()))
+            .default_service(web::route().to(spa))
     })
     .listen(listener)?
     .run();
