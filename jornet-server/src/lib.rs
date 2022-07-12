@@ -1,11 +1,11 @@
-use std::net::TcpListener;
+use std::{net::TcpListener, path::PathBuf, str::FromStr};
 
 use actix_files::NamedFile;
 use actix_web::{
     dev::Server,
     middleware::Logger,
     web::{self, Data},
-    App, HttpServer, Responder, Result,
+    App, HttpRequest, HttpServer, Result,
 };
 use configuration::get_configuration;
 use sqlx::PgPool;
@@ -13,8 +13,15 @@ use sqlx::PgPool;
 pub mod configuration;
 pub mod domains;
 
-async fn spa() -> impl Responder {
-    NamedFile::open_async("./static/index.html").await
+async fn spa(req: HttpRequest) -> Result<NamedFile> {
+    let path: PathBuf = req.match_info().query("filename").parse().unwrap();
+    let mut static_path = PathBuf::from_str("static").unwrap();
+    if path.extension().is_some() {
+        static_path.push(path);
+    } else {
+        static_path.push("index.html");
+    }
+    Ok(NamedFile::open(static_path)?)
 }
 
 pub fn run(listener: TcpListener, connection_pool: PgPool) -> Result<Server, std::io::Error> {
@@ -35,7 +42,7 @@ pub fn run(listener: TcpListener, connection_pool: PgPool) -> Result<Server, std
             .service(domains::config::config(config.clone()))
             .service(domains::oauth::oauth())
             .service(domains::admins::admins(root.clone()))
-            .default_service(web::route().to(spa))
+            .route("/{filename:.*}", web::get().to(spa))
     })
     .listen(listener)?
     .run();
