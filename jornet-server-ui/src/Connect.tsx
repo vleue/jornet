@@ -1,7 +1,12 @@
+import { throws } from "assert";
 import React, { Component } from "react";
+import { NavigateFunction, useNavigate } from "react-router-dom";
 import validator from "validator";
 
-type ConnectProps = {};
+type ConnectProps = {
+    navigate?: NavigateFunction;
+    setToken: (token: string) => void;
+};
 type ConnectState = {
     github_app_id?: string;
     uuid: string;
@@ -16,7 +21,6 @@ class Connect extends Component<ConnectProps, ConnectState> {
         fetch('/api/config/oauth')
             .then(response => response.json())
             .then(data => this.setState({ github_app_id: data.github_app_id }));
-
     }
     render() {
         return (
@@ -39,8 +43,23 @@ class Connect extends Component<ConnectProps, ConnectState> {
         this.setState({ uuid: event.target.value });
     }
     handleSubmit = (event: React.FormEvent) => {
+        const requestOptions = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ uuid: this.state.uuid })
+        };
+        fetch('/oauth/by_uuid', requestOptions)
+            .then(response => response.json())
+            .then(data => {
+                this.props.setToken(data.token);
+                this.props.navigate!("/dashboard");
+            })
         event.preventDefault();
     }
 }
 
-export default Connect;
+export default function (props: ConnectProps) {
+    const navigate = useNavigate();
+
+    return <Connect {...props} navigate={navigate} />;
+};
