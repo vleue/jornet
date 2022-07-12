@@ -2,10 +2,10 @@ module Main exposing (Model, init, main, subscriptions, update, view)
 
 import Browser
 import Browser.Navigation as Nav
-import Home
 import Http
-import Login
 import Messages exposing (LoginMsg(..), Msg(..), oauthConfigDecoder)
+import Page.Home as Home
+import Page.Login as Login
 import Url
 import Url.Parser exposing ((</>), Parser, map, oneOf, s)
 

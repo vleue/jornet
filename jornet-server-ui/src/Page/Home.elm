@@ -1,4 +1,4 @@
-module Home exposing (Model, init, subscriptions, update, view)
+module Page.Home exposing (Model, init, subscriptions, update, view)
 
 import Browser
 import Browser.Navigation as Nav

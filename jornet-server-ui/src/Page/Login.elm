@@ -1,4 +1,4 @@
-module Login exposing (Model, subscriptions, update, view)
+module Page.Login exposing (Model, subscriptions, update, view)
 
 import Browser
 import Html exposing (a, button, div, hr, input, text)
