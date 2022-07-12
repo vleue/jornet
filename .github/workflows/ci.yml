@@ -8,8 +8,8 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  test:
-    name: Test
+  rust-test:
+    name: Rust Test
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -80,8 +80,8 @@ jobs:
         with:
           command: test
 
-  fmt:
-    name: Rustfmt
+  rust-fmt:
+    name: Rust format
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -95,7 +95,7 @@ jobs:
           command: fmt
           args: --all -- --check
 
-  clippy:
+  rust-clippy:
     name: Clippy
     runs-on: ubuntu-latest
     services:
