@@ -161,4 +161,4 @@ jobs:
       - name: build
         run: |
           cd jornet-server-ui
-          npm build
+          npm run build
