@@ -33,7 +33,7 @@ class ConnectInner extends Component<ConnectProps, ConnectState> {
                     <label>UUID:
                         <input type="text" value={this.state.uuid} onChange={this.handleChange} />
                     </label>
-                    <input type="submit" value="Authenticate with UUID" disabled={!validator.isUUID(this.state.uuid)} />
+                    <input type="submit" value="Connect using UUID" disabled={!validator.isUUID(this.state.uuid)} />
                 </form>
             </div >
         );
