@@ -34,7 +34,7 @@ jobs:
           git commit --message "Built front"
           git push --force origin release-clever
 
-      - uses: 47ng/actions-clever-cloud@v1.1
+      - uses: 47ng/actions-clever-cloud@848b643ba0771c980a3cefb7e59918dedd2d6fef
         with:
           appID: app_451f9750-246e-4649-b419-7f3888fa2c69
           force: true
