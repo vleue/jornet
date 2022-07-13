@@ -13,9 +13,31 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: setup git
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email noreply@github.com
+          git switch -c release-clever
+          
+      - name: build front
+        run: |
+          cd jornet-server-ui
+          npm install
+          npm run build
+          cp -r build/ ../jornet-server/static/
+          cd ..
+
+      - name: push branch
+        run: |
+          git rm jornet-server/static/.gitignore
+          git add jornet-server/static
+          git commit --message "Built front"
+          git push origin release-clever
+
       - uses: 47ng/actions-clever-cloud@v1.1
         with:
           appID: app_451f9750-246e-4649-b419-7f3888fa2c69
+          force: true
         env:
           CLEVER_TOKEN: ${{ secrets.CLEVER_TOKEN }}
           CLEVER_SECRET: ${{ secrets.CLEVER_SECRET }}
