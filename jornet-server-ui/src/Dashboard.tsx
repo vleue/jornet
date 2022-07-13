@@ -36,7 +36,5 @@ class DashboardInner extends Component<DashboardProps, DashboardState> {
 }
 
 export default function Dashboard(props: DashboardProps) {
-    const navigate = useNavigate();
-
-    return <DashboardInner {...props} navigate={navigate} />;
+    return <DashboardInner {...props} navigate={useNavigate()} />;
 };
