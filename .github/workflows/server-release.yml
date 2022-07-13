@@ -18,6 +18,7 @@ jobs:
           git config user.name "GitHub Actions"
           git config user.email noreply@github.com
           git switch -c release-clever
+          git reset --hard main
           
       - name: build front
         run: |
@@ -32,7 +33,7 @@ jobs:
           git rm jornet-server/static/.gitignore
           git add jornet-server/static
           git commit --message "Built front"
-          git push origin release-clever
+          git push --force origin release-clever
 
       - uses: 47ng/actions-clever-cloud@v1.1
         with:
