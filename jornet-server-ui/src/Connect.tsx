@@ -80,6 +80,6 @@ class ConnectInner extends Component<ConnectProps, ConnectState> {
 }
 
 export default function Connect(props: ConnectProps) {
-    const [searchParams, _] = useSearchParams();
+    const searchParams = useSearchParams()[0];
     return <ConnectInner {...props} navigate={useNavigate()} searchParams={searchParams} />;
 };
