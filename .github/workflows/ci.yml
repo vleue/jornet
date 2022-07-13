@@ -152,3 +152,15 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           args: -- -D warnings
+
+  react-build:
+    name: React Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: build
+        run: |
+          cd jornet-server-ui
+          npm build
