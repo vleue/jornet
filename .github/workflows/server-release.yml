@@ -17,8 +17,7 @@ jobs:
         run: |
           git config user.name "GitHub Actions"
           git config user.email noreply@github.com
-          git switch -c release-clever
-          git reset --hard main
+          git checkout -b release-clever
           
       - name: build front
         run: |
