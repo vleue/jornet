@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { NavigateFunction, NavLink, useNavigate } from "react-router-dom";
+import { NavigateFunction, useNavigate } from "react-router-dom";
 
 
 type DashboardProps = {
@@ -9,7 +9,7 @@ type DashboardProps = {
 type DashboardState = {};
 
 
-class Dashboard extends Component<DashboardProps, DashboardState> {
+class DashboardInner extends Component<DashboardProps, DashboardState> {
     componentDidMount() {
         if (this.props.token === undefined) {
             return setTimeout(() => this.props.navigate!("/connect"));
@@ -35,8 +35,8 @@ class Dashboard extends Component<DashboardProps, DashboardState> {
     }
 }
 
-export default function (props: DashboardProps) {
+export default function Dashboard(props: DashboardProps) {
     const navigate = useNavigate();
 
-    return <Dashboard {...props} navigate={navigate} />;
+    return <DashboardInner {...props} navigate={navigate} />;
 };

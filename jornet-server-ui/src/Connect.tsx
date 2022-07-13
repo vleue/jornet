@@ -1,4 +1,3 @@
-import { throws } from "assert";
 import React, { Component } from "react";
 import { NavigateFunction, useNavigate } from "react-router-dom";
 import validator from "validator";
@@ -12,7 +11,7 @@ type ConnectState = {
     uuid: string;
 };
 
-class Connect extends Component<ConnectProps, ConnectState> {
+class ConnectInner extends Component<ConnectProps, ConnectState> {
     state: ConnectState = {
         github_app_id: undefined,
         uuid: "",
@@ -58,8 +57,8 @@ class Connect extends Component<ConnectProps, ConnectState> {
     }
 }
 
-export default function (props: ConnectProps) {
+export default function Connect(props: ConnectProps) {
     const navigate = useNavigate();
 
-    return <Connect {...props} navigate={navigate} />;
+    return <ConnectInner {...props} navigate={navigate} />;
 };
