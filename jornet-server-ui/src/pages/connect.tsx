@@ -12,6 +12,7 @@ type ConnectState = {
     github_app_id?: string;
     uuid: string;
     is_from_callback: boolean;
+    error?: string;
 };
 
 class ConnectInner extends Component<ConnectProps, ConnectState> {
@@ -53,6 +54,11 @@ class ConnectInner extends Component<ConnectProps, ConnectState> {
                 )}
                 <hr />
                 Alternatively, you can connect using an UUID, in which case you'll need to remember it as it will be the only way to connect.
+                {this.state.error !== undefined ? (
+                    <div>{this.state.error}</div>
+                ) : (
+                    <div></div>
+                )}
                 <form onSubmit={this.handleSubmit}>
                     <label>
                         <input type="text" value={this.state.uuid} onChange={this.handleChange} placeholder="UUID" />
@@ -66,7 +72,7 @@ class ConnectInner extends Component<ConnectProps, ConnectState> {
         );
     }
     handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        this.setState({ uuid: event.target.value });
+        this.setState({ uuid: event.target.value, error: undefined });
     }
     handleSubmit = (event: React.FormEvent) => {
         let uuid = this.state.uuid !== "" ? this.state.uuid : uuidv4();
@@ -75,11 +81,15 @@ class ConnectInner extends Component<ConnectProps, ConnectState> {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ uuid: uuid })
         };
+        this.setState({ error: undefined });
         fetch('/oauth/by_uuid', requestOptions)
             .then(response => response.json())
             .then(data => {
                 this.props.setToken(data.token);
                 this.props.navigate!("/dashboard");
+            })
+            .catch(reason => {
+                this.setState({ uuid: "", error: "Error connecting with this UUID, try another." });
             })
         event.preventDefault();
     }
