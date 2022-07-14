@@ -52,9 +52,10 @@ class ConnectInner extends Component<ConnectProps, ConnectState> {
                     <a href={`https://github.com/login/oauth/authorize?client_id=${this.state.github_app_id}`}>Connect using GitHub</a>
                 )}
                 <hr />
+                Alternatively, you can connect using an UUID, in which case you'll need to remember it as it will be the only way to connect.
                 <form onSubmit={this.handleSubmit}>
-                    <label>UUID:
-                        <input type="text" value={this.state.uuid} onChange={this.handleChange} />
+                    <label>
+                        <input type="text" value={this.state.uuid} onChange={this.handleChange} placeholder="UUID" />
                     </label>
                     <input type="submit" value="Connect using UUID" disabled={!validator.isUUID(this.state.uuid)} />
                 </form>
