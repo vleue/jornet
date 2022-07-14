@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import { NavigateFunction, useNavigate, useSearchParams } from "react-router-dom";
 import validator from "validator";
+import { v4 as uuidv4 } from "uuid";
 
 type ConnectProps = {
     navigate?: NavigateFunction;
@@ -57,6 +58,9 @@ class ConnectInner extends Component<ConnectProps, ConnectState> {
                     </label>
                     <input type="submit" value="Connect using UUID" disabled={!validator.isUUID(this.state.uuid)} />
                 </form>
+                <form onSubmit={this.handleSubmit}>
+                    <input type="submit" value="New account" />
+                </form>
             </div >
         );
     }
@@ -64,10 +68,11 @@ class ConnectInner extends Component<ConnectProps, ConnectState> {
         this.setState({ uuid: event.target.value });
     }
     handleSubmit = (event: React.FormEvent) => {
+        let uuid = this.state.uuid !== "" ? this.state.uuid : uuidv4();
         const requestOptions = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ uuid: this.state.uuid })
+            body: JSON.stringify({ uuid: uuid })
         };
         fetch('/oauth/by_uuid', requestOptions)
             .then(response => response.json())
