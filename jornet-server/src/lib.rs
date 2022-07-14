@@ -10,6 +10,7 @@ use actix_web::{
 use configuration::get_configuration;
 use sqlx::PgPool;
 
+pub mod auth_admin;
 pub mod configuration;
 pub mod domains;
 
@@ -41,7 +42,7 @@ pub fn run(listener: TcpListener, connection_pool: PgPool) -> Result<Server, std
             )
             .service(domains::config::config(config.clone()))
             .service(domains::oauth::oauth())
-            .service(domains::admins::admins(root.clone()))
+            .service(domains::admin::admin(root.clone()))
             .route("/{filename:.*}", web::get().to(spa))
     })
     .listen(listener)?

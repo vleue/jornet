@@ -1,15 +1,9 @@
 use actix_web::{
     cookie::time::{format_description::well_known::Rfc3339, Duration, OffsetDateTime},
-    dev::{HttpServiceFactory, ServiceRequest},
-    web, Error, HttpMessage, HttpResponse, Responder,
+    dev::HttpServiceFactory,
+    web, HttpResponse, Responder,
 };
-use actix_web_httpauth::{
-    extractors::{
-        bearer::{BearerAuth, Config},
-        AuthenticationError,
-    },
-    middleware::HttpAuthentication,
-};
+use actix_web_httpauth::middleware::HttpAuthentication;
 use biscuit_auth::{
     builder::{Fact, Term},
     Authorizer, Biscuit, KeyPair,
@@ -17,6 +11,8 @@ use biscuit_auth::{
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use uuid::Uuid;
+
+use crate::auth_admin::validator;
 
 use super::oauth::TOKEN_TTL;
 
@@ -30,7 +26,7 @@ pub struct AdminAccount {
     pub id: Uuid,
 }
 
-trait BiscuitFact: Sized {
+pub trait BiscuitFact: Sized {
     fn as_biscuit_fact(&self) -> Fact;
     fn from_authorizer(authorizer: &mut Authorizer) -> Option<Self>;
 }
@@ -48,34 +44,13 @@ impl BiscuitFact for AdminAccount {
     }
 }
 
-async fn validator(req: ServiceRequest, credentials: BearerAuth) -> Result<ServiceRequest, Error> {
-    let root = req.app_data::<web::Data<KeyPair>>().unwrap();
-    let biscuit = Biscuit::from_base64(credentials.token(), |_| root.public())
-        .map_err(|_| AuthenticationError::from(Config::default()))?;
-
-    let user = authorize(&biscuit).ok_or_else(|| AuthenticationError::from(Config::default()))?;
-
-    req.extensions_mut().insert(user);
-    Ok(req)
-}
-
-pub fn authorize(token: &Biscuit) -> Option<AdminAccount> {
-    let mut authorizer = token.authorizer().ok()?;
-
-    authorizer.set_time();
-    authorizer.allow().map_err(|_| ()).ok()?;
-    authorizer.authorize().map_err(|_| ()).ok()?;
-
-    AdminAccount::from_authorizer(&mut authorizer)
-}
-
 #[derive(Debug, Deserialize, Serialize)]
 pub struct GithubUser {
     login: String,
     id: u32,
 }
 
-pub(crate) fn admins(kp: web::Data<KeyPair>) -> impl HttpServiceFactory {
+pub(crate) fn admin(kp: web::Data<KeyPair>) -> impl HttpServiceFactory {
     web::scope("api/admin")
         .app_data(kp)
         .wrap(HttpAuthentication::bearer(validator))

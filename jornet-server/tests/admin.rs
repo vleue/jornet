@@ -1,4 +1,4 @@
-use jornet_server::domains::admins::TokenReply;
+use jornet_server::domains::admin::TokenReply;
 use serde::Serialize;
 use uuid::Uuid;
 

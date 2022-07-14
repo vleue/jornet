@@ -11,7 +11,7 @@ use uuid::Uuid;
 
 use crate::configuration::Settings;
 
-use super::admins::{AdminAccount, GithubUser};
+use super::admin::{AdminAccount, GithubUser};
 
 pub const TOKEN_TTL: i64 = 600;
 

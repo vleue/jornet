@@ -1,4 +1,4 @@
-pub mod admins;
+pub mod admin;
 pub mod config;
-pub(crate) mod healthcheck;
+pub mod healthcheck;
 pub mod oauth;
