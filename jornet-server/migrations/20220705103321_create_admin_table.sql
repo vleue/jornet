@@ -1,4 +1,4 @@
 CREATE TABLE admins(
-   id uuid NOT NULL,
+   id UUID NOT NULL,
    PRIMARY KEY (id)
 );
