@@ -12,7 +12,7 @@ type DashboardState = {};
 class DashboardInner extends Component<DashboardProps, DashboardState> {
     componentDidMount() {
         if (this.props.token === undefined) {
-            return setTimeout(() => this.props.navigate!("/connect"));
+            return setTimeout(() => this.props.navigate!("/connect"), 200);
         }
         fetch("/api/admin/whoami", { headers: { Authorization: 'Bearer ' + this.props.token! } })
             .then(response => response.json())

@@ -4,9 +4,9 @@ import {
   BrowserRouter as Router,
   Routes
 } from "react-router-dom";
-import Landing from "./Landing";
-import Connect from "./Connect";
-import Dashboard from "./Dashboard";
+import Landing from "./pages/landing";
+import Connect from "./pages/connect";
+import Dashboard from "./pages/dashboard";
 
 
 type AppProps = {};
