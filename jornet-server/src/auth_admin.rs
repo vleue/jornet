@@ -10,15 +10,17 @@ use crate::domains::admin::{AdminAccount, BiscuitFact};
 pub async fn validator(
     req: ServiceRequest,
     credentials: BearerAuth,
-) -> Result<ServiceRequest, Error> {
+) -> Result<ServiceRequest, (Error, ServiceRequest)> {
     let root = req.app_data::<web::Data<KeyPair>>().unwrap();
-    let biscuit = Biscuit::from_base64(credentials.token(), |_| root.public())
-        .map_err(|_| AuthenticationError::from(Config::default()))?;
-
-    let user = authorize(&biscuit).ok_or_else(|| AuthenticationError::from(Config::default()))?;
-
-    req.extensions_mut().insert(user);
-    Ok(req)
+    if let Some(user) = Biscuit::from_base64(credentials.token(), |_| root.public())
+        .ok()
+        .and_then(|biscuit| authorize(&biscuit))
+    {
+        req.extensions_mut().insert(user);
+        Ok(req)
+    } else {
+        Err((AuthenticationError::from(Config::default()).into(), req))
+    }
 }
 
 pub fn authorize(token: &Biscuit) -> Option<AdminAccount> {
