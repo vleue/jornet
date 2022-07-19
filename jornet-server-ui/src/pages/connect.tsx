@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { NavigateFunction, useNavigate, useSearchParams } from "react-router-dom";
 import validator from "validator";
 import { v4 as uuidv4 } from "uuid";
-import { Button, Col, Container, Form, Row } from "react-bootstrap";
+import { Button, Col, Container, FloatingLabel, Form, InputGroup, Row } from "react-bootstrap";
 
 type ConnectProps = {
     navigate?: NavigateFunction;
@@ -50,11 +50,7 @@ class ConnectInner extends Component<ConnectProps, ConnectState> {
             <Container fluid="lg">
                 <Row>
                     <Col>
-                        {this.state.github_app_id === undefined ? (
-                            <div>Connect using GitHub (disabled)</div>
-                        ) : (
-                            <a href={`https://github.com/login/oauth/authorize?client_id=${this.state.github_app_id}`}>Connect using GitHub</a>
-                        )}
+                        &nbsp;
                     </Col>
                 </Row>
                 <Row>
@@ -64,20 +60,68 @@ class ConnectInner extends Component<ConnectProps, ConnectState> {
                         ) : (
                             <div></div>
                         )}
-                        <Form.Group className="mb-3" controlId="formBasicEmail">
-                            <Form.Label>Or you can connect using an UUID, in which case you'll need to remember it as it will be the only way to connect.</Form.Label>
-                            <Form.Control type="text" placeholder="UUID" value={this.state.uuid} onChange={this.handleChange} />
-                        </Form.Group>
-                        <Button variant="primary" onClick={this.handleSubmit} disabled={!validator.isUUID(this.state.uuid)}>
-                            Connect using UUID
-                        </Button>
-                        &nbsp;
-                        <Button variant="success" onClick={this.handleSubmit} disabled={this.state.uuid !== ""} >
+                    </Col>
+                </Row>
+                <Row>
+                    <Col sm={6}>
+                        <InputGroup>
+                            <FloatingLabel
+                                controlId="uuid"
+                                className="w-75"
+                                label="Your UUID"
+                            >
+                                <Form.Control
+                                    type="text"
+                                    placeholder="Your UUID"
+                                    value={this.state.uuid}
+                                    onChange={this.handleChange}
+                                />
+                            </FloatingLabel>
+                            <Button
+                                variant="primary"
+                                onClick={this.handleSubmit}
+                                disabled={!validator.isUUID(this.state.uuid)}
+                            >
+                                Connect
+                            </Button>
+                        </InputGroup>
+                    </Col>
+                    <Col>
+                        <Button
+                            style={{ padding: "16px" }}
+                            className="w-75"
+                            variant="info"
+                            onClick={this.handleSubmit}
+                            disabled={this.state.uuid !== ""}
+                        >
                             New Account
                         </Button>
                     </Col>
+                    <Col>
+                        {this.state.github_app_id === undefined ? (
+                            <Button
+                                style={{ padding: "16px" }}
+                                className="w-75"
+                                variant="success"
+                                disabled={true}
+                            >
+                                Connect using GitHub (disabled)
+                            </Button>
+
+                        ) : (
+                            <a href={`https://github.com/login/oauth/authorize?client_id=${this.state.github_app_id}`}>
+                                <Button
+                                    style={{ padding: "16px" }}
+                                    className="w-75"
+                                    variant="success"
+                                >
+                                    Connect using GitHub
+                                </Button>
+                            </a>
+                        )}
+                    </Col>
                 </Row>
-            </Container>
+            </Container >
         );
     }
     handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {

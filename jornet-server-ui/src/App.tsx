@@ -17,13 +17,13 @@ import { LinkContainer } from 'react-router-bootstrap'
 type AppProps = {};
 type AppState = {
   token?: string;
-  uuid?: string;
+  login_info?: string;
 };
 
 class App extends Component<AppProps, AppState> {
   state: AppState = {
     token: undefined,
-    uuid: undefined,
+    login_info: undefined,
   };
   render() {
     return (
@@ -39,12 +39,12 @@ class App extends Component<AppProps, AppState> {
               <Navbar.Toggle />
               <Navbar.Collapse className="justify-content-end">
                 <Navbar.Text>
-                  {this.state.uuid === undefined ? (
+                  {this.state.login_info === undefined ? (
                     <LinkContainer to="/connect">
                       <Nav.Link><small>Connect...</small></Nav.Link>
                     </LinkContainer>) : (
                     <LinkContainer to="/dashboard">
-                      <Nav.Link><small>connected as {this.state.uuid}</small></Nav.Link>
+                      <Nav.Link><small>connected as {this.state.login_info}</small></Nav.Link>
                     </LinkContainer>
                   )}
                 </Navbar.Text>
@@ -56,7 +56,7 @@ class App extends Component<AppProps, AppState> {
               <Routes>
                 <Route path="/" element={<Landing />} />
                 <Route path="/connect" element={<Connect setToken={this.setToken} />} />
-                <Route path="/dashboard" element={<Dashboard token={this.state.token} setUuid={this.setUuid} setToken={this.setToken} />} />
+                <Route path="/dashboard" element={<Dashboard token={this.state.token} setLoginInfo={this.setLoginInfo} setToken={this.setToken} />} />
               </Routes>
             </div></div>
         </Router>
@@ -66,8 +66,8 @@ class App extends Component<AppProps, AppState> {
   setToken = (token?: string) => {
     this.setState({ token: token });
   }
-  setUuid = (uuid?: string) => {
-    this.setState({ uuid: uuid });
+  setLoginInfo = (login_info?: string) => {
+    this.setState({ login_info: login_info });
   }
 }
 

@@ -6,7 +6,16 @@ class Landing extends Component {
         return (
             <Container fluid="lg">
                 <Row>
-                    <Col>Jornet is the social game server made for game jams!</Col>
+                    <Col>&nbsp;</Col>
+                </Row>
+                <Row>
+                    <Col></Col>
+                    <Col xs={10}>
+                        <big>
+                            Jornet is the social game server made for game jams!
+                        </big>
+                    </Col>
+                    <Col></Col>
                 </Row>
             </Container>
         );

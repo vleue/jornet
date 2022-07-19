@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Col, Container, Row } from "react-bootstrap";
+import { Button, Col, Container, FloatingLabel, Form, InputGroup, Row } from "react-bootstrap";
 import { NavigateFunction, useNavigate } from "react-router-dom";
 
 
@@ -10,11 +10,12 @@ type User = {
 type DashboardProps = {
     token?: string;
     navigate?: NavigateFunction;
-    setUuid: (uuid?: string) => void;
+    setLoginInfo: (uuid?: string) => void;
     setToken: (token?: string) => void;
 };
 type DashboardState = {
     user?: User;
+    new_leaderboard?: string;
 };
 
 
@@ -28,10 +29,14 @@ class DashboardInner extends Component<DashboardProps, DashboardState> {
         fetch("/api/admin/whoami", { headers: { Authorization: 'Bearer ' + this.props.token! } })
             .then(response => response.json())
             .then(data => {
-                this.props.setUuid(data.admin.id);
+                if (data.github?.login === undefined) {
+                    this.props.setLoginInfo(data.admin.id);
+                } else {
+                    this.props.setLoginInfo(data.github?.login);
+                }
                 this.setState({ user: { uuid: data.admin.id, github_login: data.github?.login } });
             }).catch(error => {
-                this.props.setUuid(undefined);
+                this.props.setLoginInfo(undefined);
                 this.props.setToken(undefined);
             });
     }
@@ -59,17 +64,55 @@ class DashboardInner extends Component<DashboardProps, DashboardState> {
         return (
             <Container fluid="lg">
                 <Row>
-                    <Col>Hello!</Col>
+                    <Col>&nbsp;</Col>
                 </Row>
                 <Row>
-                    {this.state.user?.github_login === undefined ? (
-                        <Col>using UUID</Col>
-                    ) : (
-                        <Col>using GitHub account {this.state.user?.github_login!}</Col>
-                    )}
+                    <Col>
+                        <InputGroup>
+                            <FloatingLabel
+                                className="w-75"
+                                controlId="new-leaderboard"
+                                label="New Leaderboard Name"
+                            >
+                                <Form.Control
+                                    type="text"
+                                    placeholder="New Leaderboard Name"
+                                    value={this.state.new_leaderboard}
+                                    onChange={this.handleChange}
+                                />
+                            </FloatingLabel>
+                            <Button variant="primary" onClick={this.handleSubmit}
+                            >
+                                Create
+                            </Button>
+                        </InputGroup>
+                    </Col>
                 </Row>
             </Container>
         );
+    }
+    handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        this.setState({ new_leaderboard: event.target.value });
+    }
+    handleSubmit = (event: React.FormEvent) => {
+        console.log(this.state.new_leaderboard);
+        // let uuid = this.state.uuid !== "" ? this.state.uuid : uuidv4();
+        // const requestOptions = {
+        //     method: 'POST',
+        //     headers: { 'Content-Type': 'application/json' },
+        //     body: JSON.stringify({ uuid: uuid })
+        // };
+        // this.setState({ error: undefined });
+        // fetch('/oauth/by_uuid', requestOptions)
+        //     .then(response => response.json())
+        //     .then(data => {
+        //         this.props.setToken(data.token);
+        //         this.props.navigate!("/dashboard");
+        //     })
+        //     .catch(reason => {
+        //         this.setState({ uuid: "", error: "Error connecting with this UUID, try another." });
+        //     })
+        // event.preventDefault();
     }
 }
 
