@@ -43,6 +43,7 @@ pub fn run(listener: TcpListener, connection_pool: PgPool) -> Result<Server, std
             .service(domains::config::config(config.clone()))
             .service(domains::oauth::oauth())
             .service(domains::admin::admin(root.clone()))
+            .service(domains::leaderboard::leaderboard(root.clone()))
             .route("/{filename:.*}", web::get().to(spa))
     })
     .listen(listener)?

@@ -7,6 +7,10 @@ type User = {
     uuid: String,
     github_login?: String
 }
+type Leaderboard = {
+    name: string,
+    id: string
+}
 type DashboardProps = {
     token?: string;
     navigate?: NavigateFunction;
@@ -16,11 +20,13 @@ type DashboardProps = {
 type DashboardState = {
     user?: User;
     new_leaderboard?: string;
+    leaderboards: Leaderboard[]
 };
 
 
 class DashboardInner extends Component<DashboardProps, DashboardState> {
     state: DashboardState = {
+        leaderboards: []
     };
     componentDidMount() {
         if (this.props.token === undefined) {
@@ -35,6 +41,14 @@ class DashboardInner extends Component<DashboardProps, DashboardState> {
                     this.props.setLoginInfo(data.github?.login);
                 }
                 this.setState({ user: { uuid: data.admin.id, github_login: data.github?.login } });
+            }).catch(error => {
+                this.props.setLoginInfo(undefined);
+                this.props.setToken(undefined);
+            });
+        fetch("/api/leaderboards", { headers: { Authorization: 'Bearer ' + this.props.token! } })
+            .then(response => response.json())
+            .then(data => {
+                this.setState({ leaderboards: data });
             }).catch(error => {
                 this.props.setLoginInfo(undefined);
                 this.props.setToken(undefined);
@@ -81,13 +95,23 @@ class DashboardInner extends Component<DashboardProps, DashboardState> {
                                     onChange={this.handleChange}
                                 />
                             </FloatingLabel>
-                            <Button variant="primary" onClick={this.handleSubmit}
+                            <Button
+                                variant="primary"
+                                onClick={this.handleSubmit}
+                                disabled={this.state.new_leaderboard === ""}
                             >
                                 Create
                             </Button>
                         </InputGroup>
                     </Col>
                 </Row>
+                {this.state.leaderboards.map((leaderboard, index) => {
+                    return <Row>
+                        <Col>
+                            {leaderboard.name}
+                        </Col>
+                    </Row>
+                })}
             </Container>
         );
     }
@@ -95,24 +119,25 @@ class DashboardInner extends Component<DashboardProps, DashboardState> {
         this.setState({ new_leaderboard: event.target.value });
     }
     handleSubmit = (event: React.FormEvent) => {
-        console.log(this.state.new_leaderboard);
-        // let uuid = this.state.uuid !== "" ? this.state.uuid : uuidv4();
-        // const requestOptions = {
-        //     method: 'POST',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify({ uuid: uuid })
-        // };
-        // this.setState({ error: undefined });
-        // fetch('/oauth/by_uuid', requestOptions)
-        //     .then(response => response.json())
-        //     .then(data => {
-        //         this.props.setToken(data.token);
-        //         this.props.navigate!("/dashboard");
-        //     })
-        //     .catch(reason => {
-        //         this.setState({ uuid: "", error: "Error connecting with this UUID, try another." });
-        //     })
-        // event.preventDefault();
+        const requestOptions = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + this.props.token!
+            },
+            body: JSON.stringify({ name: this.state.new_leaderboard })
+        };
+        fetch('/api/leaderboards', requestOptions)
+            .then(response => response.json())
+            .then(data => {
+                var leaderboards = this.state.leaderboards;
+                leaderboards.push(data)
+                this.setState({ leaderboards: leaderboards });
+            }).catch(error => {
+                this.props.setLoginInfo(undefined);
+                this.props.setToken(undefined);
+            });
+        event.preventDefault();
     }
 }
 
