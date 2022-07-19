@@ -119,6 +119,7 @@ class DashboardInner extends Component<DashboardProps, DashboardState> {
         this.setState({ new_leaderboard: event.target.value });
     }
     handleSubmit = (event: React.FormEvent) => {
+        this.setState({ new_leaderboard: "" });
         const requestOptions = {
             method: 'POST',
             headers: {
