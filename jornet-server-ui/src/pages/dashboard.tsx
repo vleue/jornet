@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import { Col, Container, Row } from "react-bootstrap";
 import { NavigateFunction, useNavigate } from "react-router-dom";
 
 
@@ -9,6 +10,8 @@ type User = {
 type DashboardProps = {
     token?: string;
     navigate?: NavigateFunction;
+    setUuid: (uuid?: string) => void;
+    setToken: (token?: string) => void;
 };
 type DashboardState = {
     user?: User;
@@ -25,7 +28,11 @@ class DashboardInner extends Component<DashboardProps, DashboardState> {
         fetch("/api/admin/whoami", { headers: { Authorization: 'Bearer ' + this.props.token! } })
             .then(response => response.json())
             .then(data => {
+                this.props.setUuid(data.admin.id);
                 this.setState({ user: { uuid: data.admin.id, github_login: data.github?.login } });
+            }).catch(error => {
+                this.props.setUuid(undefined);
+                this.props.setToken(undefined);
             });
     }
 
@@ -33,30 +40,35 @@ class DashboardInner extends Component<DashboardProps, DashboardState> {
         if (this.props.token === undefined) {
             setTimeout(() => this.props.navigate!("/connect"), 200);
             return (
-                <div>
-                    <div>You are disconnected, redirecting to login screen</div>
-                </div>
+                <Container fluid="lg">
+                    <Row>
+                        <Col>You are disconnected, redirecting to login screen</Col>
+                    </Row>
+                </Container>
             );
         }
         if (this.state.user === undefined) {
             return (
-                <div>
-                    Loading...
-                </div>
+                <Container fluid="lg">
+                    <Row>
+                        <Col>Loading...</Col>
+                    </Row>
+                </Container>
             );
         }
         return (
-            <div>
-                <div>Hello</div>
-                <div>Connected as {this.state.user?.uuid!}
-                    <div>{this.state.user?.github_login === undefined ? (
-                        <div>using UUID</div>
+            <Container fluid="lg">
+                <Row>
+                    <Col>Hello!</Col>
+                </Row>
+                <Row>
+                    {this.state.user?.github_login === undefined ? (
+                        <Col>using UUID</Col>
                     ) : (
-                        <div>using GitHub account {this.state.user?.github_login!}</div>
+                        <Col>using GitHub account {this.state.user?.github_login!}</Col>
                     )}
-                    </div>
-                </div>
-            </div>
+                </Row>
+            </Container>
         );
     }
 }

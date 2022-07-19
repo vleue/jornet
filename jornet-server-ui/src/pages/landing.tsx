@@ -1,13 +1,14 @@
 import React, { Component } from "react";
-import { Link } from "react-router-dom";
+import { Col, Container, Row } from "react-bootstrap";
 
 class Landing extends Component {
     render() {
         return (
-            <div>
-                <div>Jornet is the social game server made for game jams!</div>
-                <Link to="/connect">Connect to Admin Dashboard</Link>
-            </div>
+            <Container fluid="lg">
+                <Row>
+                    <Col>Jornet is the social game server made for game jams!</Col>
+                </Row>
+            </Container>
         );
     }
 }

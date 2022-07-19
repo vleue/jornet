@@ -2,11 +2,12 @@ import React, { Component } from "react";
 import { NavigateFunction, useNavigate, useSearchParams } from "react-router-dom";
 import validator from "validator";
 import { v4 as uuidv4 } from "uuid";
+import { Button, Col, Container, Form, Row } from "react-bootstrap";
 
 type ConnectProps = {
     navigate?: NavigateFunction;
     searchParams?: URLSearchParams;
-    setToken: (token: string) => void;
+    setToken: (token?: string) => void;
 };
 type ConnectState = {
     github_app_id?: string;
@@ -46,29 +47,37 @@ class ConnectInner extends Component<ConnectProps, ConnectState> {
             )
         }
         return (
-            <div>
-                {this.state.github_app_id === undefined ? (
-                    <div>Connect using GitHub (disabled)</div>
-                ) : (
-                    <a href={`https://github.com/login/oauth/authorize?client_id=${this.state.github_app_id}`}>Connect using GitHub</a>
-                )}
-                <hr />
-                Alternatively, you can connect using an UUID, in which case you'll need to remember it as it will be the only way to connect.
-                {this.state.error !== undefined ? (
-                    <div>{this.state.error}</div>
-                ) : (
-                    <div></div>
-                )}
-                <form onSubmit={this.handleSubmit}>
-                    <label>
-                        <input type="text" value={this.state.uuid} onChange={this.handleChange} placeholder="UUID" />
-                    </label>
-                    <input type="submit" value="Connect using UUID" disabled={!validator.isUUID(this.state.uuid)} />
-                </form>
-                <form onSubmit={this.handleSubmit}>
-                    <input type="submit" value="New account" />
-                </form>
-            </div >
+            <Container fluid="lg">
+                <Row>
+                    <Col>
+                        {this.state.github_app_id === undefined ? (
+                            <div>Connect using GitHub (disabled)</div>
+                        ) : (
+                            <a href={`https://github.com/login/oauth/authorize?client_id=${this.state.github_app_id}`}>Connect using GitHub</a>
+                        )}
+                    </Col>
+                </Row>
+                <Row>
+                    <Col>
+                        {this.state.error !== undefined ? (
+                            <div>{this.state.error}</div>
+                        ) : (
+                            <div></div>
+                        )}
+                        <Form.Group className="mb-3" controlId="formBasicEmail">
+                            <Form.Label>Or you can connect using an UUID, in which case you'll need to remember it as it will be the only way to connect.</Form.Label>
+                            <Form.Control type="text" placeholder="UUID" value={this.state.uuid} onChange={this.handleChange} />
+                        </Form.Group>
+                        <Button variant="primary" onClick={this.handleSubmit} disabled={!validator.isUUID(this.state.uuid)}>
+                            Connect using UUID
+                        </Button>
+                        &nbsp;
+                        <Button variant="success" onClick={this.handleSubmit} disabled={this.state.uuid !== ""} >
+                            New Account
+                        </Button>
+                    </Col>
+                </Row>
+            </Container>
         );
     }
     handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
