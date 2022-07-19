@@ -92,12 +92,12 @@ class DashboardInner extends Component<DashboardProps, DashboardState> {
                                     type="text"
                                     placeholder="New Leaderboard Name"
                                     value={this.state.new_leaderboard}
-                                    onChange={this.handleChange}
+                                    onChange={this.handleChangeNewLeaderboard}
                                 />
                             </FloatingLabel>
                             <Button
                                 variant="primary"
-                                onClick={this.handleSubmit}
+                                onClick={this.handleSubmitNewLeaderboard}
                                 disabled={this.state.new_leaderboard === ""}
                             >
                                 Create
@@ -115,10 +115,10 @@ class DashboardInner extends Component<DashboardProps, DashboardState> {
             </Container>
         );
     }
-    handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    handleChangeNewLeaderboard = (event: React.ChangeEvent<HTMLInputElement>) => {
         this.setState({ new_leaderboard: event.target.value });
     }
-    handleSubmit = (event: React.FormEvent) => {
+    handleSubmitNewLeaderboard = (event: React.FormEvent) => {
         this.setState({ new_leaderboard: "" });
         const requestOptions = {
             method: 'POST',
