@@ -86,9 +86,9 @@ class ConnectInner extends Component<ConnectProps, ConnectState> {
                             </Button>
                         </InputGroup>
                     </Col>
-                    <Col>
+                    <Col style={{ display: "flex" }}>
                         <Button
-                            style={{ padding: "16px" }}
+                            style={{ padding: "16px", margin: "auto" }}
                             className="w-75"
                             variant="info"
                             onClick={this.handleSubmit}
