@@ -22,14 +22,15 @@ type DashboardProps = {
 };
 type DashboardState = {
     user?: User;
-    new_leaderboard?: string;
+    new_leaderboard: string;
     leaderboards: Leaderboard[]
 };
 
 
 class DashboardInner extends Component<DashboardProps, DashboardState> {
     state: DashboardState = {
-        leaderboards: []
+        leaderboards: [],
+        new_leaderboard: "",
     };
     componentDidMount() {
         if (this.props.token === undefined) {
