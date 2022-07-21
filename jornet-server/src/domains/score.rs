@@ -11,11 +11,11 @@ struct Score {
     timestamp: String,
 }
 
-#[derive(Deserialize)]
-struct ScoreInput {
-    score: f32,
-    player: Uuid,
-    meta: Option<String>,
+#[derive(Deserialize, Serialize)]
+pub struct ScoreInput {
+    pub score: f32,
+    pub player: Uuid,
+    pub meta: Option<String>,
 }
 
 async fn save_score(

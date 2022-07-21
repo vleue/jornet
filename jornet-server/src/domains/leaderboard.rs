@@ -9,15 +9,15 @@ use crate::auth_admin::validator;
 
 use super::admin::AdminAccount;
 
-#[derive(Deserialize)]
-struct LeaderboardInput {
-    name: String,
+#[derive(Deserialize, Serialize)]
+pub struct LeaderboardInput {
+    pub name: String,
 }
 
-#[derive(Serialize)]
-struct Leaderboard {
-    id: Uuid,
-    name: String,
+#[derive(Deserialize, Serialize)]
+pub struct Leaderboard {
+    pub id: Uuid,
+    pub name: String,
 }
 
 #[derive(Serialize, Debug)]
@@ -59,7 +59,7 @@ pub(crate) fn leaderboard(kp: web::Data<KeyPair>) -> impl HttpServiceFactory {
 }
 
 impl Leaderboard {
-    pub async fn get_all(connection: &PgPool, owner: Uuid) -> Vec<LeaderboardWithScoreCount> {
+    async fn get_all(connection: &PgPool, owner: Uuid) -> Vec<LeaderboardWithScoreCount> {
         sqlx::query!(
             "SELECT leaderboards.id, name, count(scores.leaderboard) FROM leaderboards LEFT JOIN scores ON leaderboards.id = scores.leaderboard WHERE owner = $1 GROUP BY leaderboards.id;",
             owner
