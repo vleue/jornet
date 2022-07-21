@@ -63,10 +63,10 @@ impl Score {
     }
 
     pub async fn save(score: &ScoreInput, connection: &PgPool, leaderboard: &Uuid) -> bool {
-        if !sqlx::query!("SELECT id FROM leaderboards WHERE id = $1", leaderboard)
+        if sqlx::query!("SELECT id FROM leaderboards WHERE id = $1", leaderboard)
             .fetch_one(connection)
             .await
-            .is_ok()
+            .is_err()
         {
             return false;
         }
