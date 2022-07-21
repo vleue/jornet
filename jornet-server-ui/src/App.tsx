@@ -33,7 +33,7 @@ class App extends Component<AppProps, AppState> {
             <Container>
               <LinkContainer to="/">
                 <Navbar.Brand>
-                  Jornet
+                  <h2>Jornet</h2>
                 </Navbar.Brand>
               </LinkContainer>
               <Navbar.Toggle />
