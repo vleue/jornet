@@ -7,7 +7,7 @@ import {
 import Landing from "./pages/landing";
 import Connect from "./pages/connect";
 import Dashboard from "./pages/dashboard";
-
+import Leaderboard from "./pages/leaderboard";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Container from 'react-bootstrap/Container';
 import Navbar from 'react-bootstrap/Navbar';
@@ -57,6 +57,7 @@ class App extends Component<AppProps, AppState> {
                 <Route path="/" element={<Landing />} />
                 <Route path="/connect" element={<Connect setToken={this.setToken} />} />
                 <Route path="/dashboard" element={<Dashboard token={this.state.token} setLoginInfo={this.setLoginInfo} setToken={this.setToken} />} />
+                <Route path="/leaderboard/:leaderboardId" element={<Leaderboard />} />
               </Routes>
             </div></div>
         </Router>

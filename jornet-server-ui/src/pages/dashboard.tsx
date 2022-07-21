@@ -1,8 +1,9 @@
 import React, { Component } from "react";
-import { Alert, Button, Col, Container, FloatingLabel, Form, InputGroup, Row } from "react-bootstrap";
+import { Alert, Button, Col, Container, FloatingLabel, Form, InputGroup, Nav, Row, Table } from "react-bootstrap";
 import { NavigateFunction, useNavigate, useSearchParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClipboard } from '@fortawesome/free-solid-svg-icons'
+import { LinkContainer } from "react-router-bootstrap";
 
 
 type User = {
@@ -11,7 +12,8 @@ type User = {
 }
 type Leaderboard = {
     name: string,
-    id: string
+    id: string,
+    scores: number,
 }
 type DashboardProps = {
     token?: string;
@@ -87,8 +89,10 @@ class DashboardInner extends Component<DashboardProps, DashboardState> {
                 {this.props.new_account ? (
                     <Row>
                         <Col>
-                            <Alert key="new_account" variant="warning">
-                                You'll need to keep your account UUID to reconnect with it: {this.state.user.uuid}
+                            <Alert key="new_account" variant="warning" style={{ display: "flex" }}>
+                                <div>You'll need to keep your account UUID to reconnect with it: </div>
+                                <div>&nbsp;</div>
+                                <div className="font-monospace">{this.state.user.uuid}</div>
                                 <FontAwesomeIcon icon={faClipboard} onClick={() => { navigator.clipboard.writeText(this.state.user!.uuid) }} style={{ marginLeft: "0.5rem" }} />
                             </Alert>
                         </Col>
@@ -120,14 +124,43 @@ class DashboardInner extends Component<DashboardProps, DashboardState> {
                         </InputGroup>
                     </Col>
                 </Row>
-                {this.state.leaderboards.map((leaderboard, index) => {
-                    return <Row>
-                        <Col>
-                            {leaderboard.name}
-                        </Col>
-                    </Row>
-                })}
-            </Container>
+                <Row>
+                    <Col>
+                        &nbsp;
+                    </Col>
+                </Row>
+                <Row>
+                    <Col>
+                        <Table striped bordered hover>
+                            <thead>
+                                <tr>
+                                    <th>Leaderboard</th>
+                                    <th>Scores</th>
+                                    <th>ID</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {
+                                    this.state.leaderboards.map((leaderboard, index) => {
+                                        return <tr key={index}>
+                                            <td>
+                                                <LinkContainer to={`/leaderboard/${leaderboard.id}`}>
+                                                    <Nav.Link>{leaderboard.name}</Nav.Link>
+                                                </LinkContainer>
+                                            </td>
+                                            <td>{leaderboard.scores}</td>
+                                            <td style={{ display: "flex" }}>
+                                                <p className="font-monospace">{leaderboard.id}</p>
+                                                <FontAwesomeIcon icon={faClipboard} onClick={() => { navigator.clipboard.writeText(leaderboard.id) }} style={{ marginLeft: "0.5rem" }} />
+                                            </td>
+                                        </tr>
+                                    })
+                                }
+                            </tbody>
+                        </Table>
+                    </Col>
+                </Row>
+            </Container >
         );
     }
     handleChangeNewLeaderboard = (event: React.ChangeEvent<HTMLInputElement>) => {

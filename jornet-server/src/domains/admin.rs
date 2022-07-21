@@ -1,8 +1,4 @@
-use actix_web::{
-    cookie::time::{format_description::well_known::Rfc3339, Duration, OffsetDateTime},
-    dev::HttpServiceFactory,
-    web, HttpResponse, Responder,
-};
+use actix_web::{dev::HttpServiceFactory, web, HttpResponse, Responder};
 use actix_web_httpauth::middleware::HttpAuthentication;
 use biscuit_auth::{
     builder::{Fact, Term},
@@ -10,6 +6,7 @@ use biscuit_auth::{
 };
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
+use time::{format_description::well_known::Rfc3339, Duration, OffsetDateTime};
 use uuid::Uuid;
 
 use crate::auth_admin::validator;

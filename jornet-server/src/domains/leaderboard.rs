@@ -20,6 +20,13 @@ struct Leaderboard {
     name: String,
 }
 
+#[derive(Serialize, Debug)]
+struct LeaderboardWithScoreCount {
+    id: Uuid,
+    name: String,
+    scores: i64,
+}
+
 async fn new_leaderboard(
     account: web::ReqData<AdminAccount>,
     connection: web::Data<PgPool>,
@@ -52,17 +59,21 @@ pub(crate) fn leaderboard(kp: web::Data<KeyPair>) -> impl HttpServiceFactory {
 }
 
 impl Leaderboard {
-    pub async fn get_all(connection: &PgPool, owner: Uuid) -> Vec<Leaderboard> {
-        sqlx::query!("SELECT id, name FROM leaderboards WHERE owner = $1", owner)
-            .fetch_all(connection)
-            .await
-            .unwrap()
-            .iter()
-            .map(|r| Leaderboard {
-                id: r.id,
-                name: r.name.clone(),
-            })
-            .collect()
+    pub async fn get_all(connection: &PgPool, owner: Uuid) -> Vec<LeaderboardWithScoreCount> {
+        sqlx::query!(
+            "SELECT leaderboards.id, name, count(scores.leaderboard) FROM leaderboards LEFT JOIN scores ON leaderboards.id = scores.leaderboard WHERE owner = $1 GROUP BY leaderboards.id;",
+            owner
+        )
+        .fetch_all(connection)
+        .await
+        .unwrap()
+        .iter()
+        .map(|r| LeaderboardWithScoreCount {
+            id: r.id,
+            name: r.name.clone(),
+            scores: r.count.unwrap(),
+        })
+        .collect()
     }
 
     pub async fn create(&self, connection: &PgPool, owner: Uuid) -> bool {
