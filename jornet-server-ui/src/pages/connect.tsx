@@ -128,7 +128,8 @@ class ConnectInner extends Component<ConnectProps, ConnectState> {
         this.setState({ uuid: event.target.value, error: undefined });
     }
     handleSubmit = (event: React.FormEvent) => {
-        let uuid = this.state.uuid !== "" ? this.state.uuid : uuidv4();
+        let new_account = this.state.uuid === "";
+        let uuid = !new_account ? this.state.uuid : uuidv4();
         const requestOptions = {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -139,7 +140,11 @@ class ConnectInner extends Component<ConnectProps, ConnectState> {
             .then(response => response.json())
             .then(data => {
                 this.props.setToken(data.token);
-                this.props.navigate!("/dashboard");
+                if (new_account) {
+                    this.props.navigate!("/dashboard?new_account");
+                } else {
+                    this.props.navigate!("/dashboard");
+                }
             })
             .catch(reason => {
                 this.setState({ uuid: "", error: "Error connecting with this UUID, try another." });

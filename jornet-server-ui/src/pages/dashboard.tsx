@@ -1,11 +1,13 @@
 import React, { Component } from "react";
-import { Button, Col, Container, FloatingLabel, Form, InputGroup, Row } from "react-bootstrap";
-import { NavigateFunction, useNavigate } from "react-router-dom";
+import { Alert, Button, Col, Container, FloatingLabel, Form, InputGroup, Row } from "react-bootstrap";
+import { NavigateFunction, useNavigate, useSearchParams } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faClipboard } from '@fortawesome/free-solid-svg-icons'
 
 
 type User = {
-    uuid: String,
-    github_login?: String
+    uuid: string,
+    github_login?: string
 }
 type Leaderboard = {
     name: string,
@@ -16,6 +18,7 @@ type DashboardProps = {
     navigate?: NavigateFunction;
     setLoginInfo: (uuid?: string) => void;
     setToken: (token?: string) => void;
+    new_account?: boolean;
 };
 type DashboardState = {
     user?: User;
@@ -80,6 +83,17 @@ class DashboardInner extends Component<DashboardProps, DashboardState> {
                 <Row>
                     <Col>&nbsp;</Col>
                 </Row>
+                {this.props.new_account ? (
+                    <Row>
+                        <Col>
+                            <Alert key="new_account" variant="warning">
+                                You'll need to keep your account UUID to reconnect with it: {this.state.user.uuid}
+                                <FontAwesomeIcon icon={faClipboard} onClick={() => { navigator.clipboard.writeText(this.state.user!.uuid) }} style={{ marginLeft: "0.5rem" }} />
+                            </Alert>
+                        </Col>
+                    </Row>
+                ) : (<></>)
+                }
                 <Row>
                     <Col>
                         <InputGroup>
@@ -143,5 +157,7 @@ class DashboardInner extends Component<DashboardProps, DashboardState> {
 }
 
 export default function Dashboard(props: DashboardProps) {
-    return <DashboardInner {...props} navigate={useNavigate()} />;
+    const searchParams = useSearchParams()[0];
+    let new_account = searchParams.get("new_account");
+    return <DashboardInner {...props} navigate={useNavigate()} new_account={new_account === ""} />;
 };
