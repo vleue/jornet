@@ -19,17 +19,24 @@ jobs:
           git config user.email noreply@github.com
           git checkout -b release-clever
           
+      - name: remove Bevy plugin
+        run: |
+          rm -rf bevy-jornet
+          cargo new --lib bevy-jornet
+          git add bevy-jornet
+          git commit --message "remove Bevy plugin"
+
       - name: build front
         run: |
           cd jornet-server-ui
           npm install
           npm run build
           cp -r build ../static
+          git add static
+          git commit --message "Built front"
 
       - name: push branch
         run: |
-          git add static
-          git commit --message "Built front"
           git push --force origin release-clever
 
       - uses: 47ng/actions-clever-cloud@v1.2.0
