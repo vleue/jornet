@@ -1,11 +1,26 @@
-use bevy::{prelude::*, winit::WinitSettings};
+use std::time::Duration;
+
+use bevy::{
+    prelude::*,
+    winit::{UpdateMode, WinitSettings},
+};
 use bevy_jornet::{JornetPlugin, Leaderboards};
 use uuid::Uuid;
 
 fn main() {
     App::new()
+        .insert_resource(WindowDescriptor {
+            canvas: Some("#demo-leaderboard".to_string()),
+            fit_canvas_to_parent: true,
+            ..default()
+        })
         .add_plugins(DefaultPlugins)
-        .insert_resource(WinitSettings::desktop_app())
+        .insert_resource(WinitSettings {
+            focused_mode: UpdateMode::Reactive {
+                max_wait: Duration::from_secs_f32(0.5),
+            },
+            ..WinitSettings::desktop_app()
+        })
         .add_plugin(JornetPlugin)
         .add_startup_system(setup)
         .add_system(display_scores)
