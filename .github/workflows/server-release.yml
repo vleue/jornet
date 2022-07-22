@@ -19,6 +19,16 @@ jobs:
           git config user.email noreply@github.com
           git checkout -b release-clever
           
+      - name: build wasm demo
+        run: |
+          rustup target add wasm32-unknown-unknown
+          cargo install wasm-bindgen-cli
+          cargo build --release --target wasm32-unknown-unknown --example bevy_ui
+          wasm-bindgen --out-dir wasm --out-name demo_leaderboard --target web target/wasm32-unknown-unknown/release/examples/bevy_ui.wasm
+          cp -r bevy-jornet/assets jornet-server-ui/public/
+          cp wasm/demo_leaderboard_bg.wasm jornet-server-ui/public/
+          cp wasm/demo_leaderboard.js jornet-server-ui/public/
+
       - name: remove Bevy plugin
         run: |
           rm -rf bevy-jornet
@@ -27,14 +37,6 @@ jobs:
           git add bevy-jornet
           git add Cargo.lock
           git commit --message "remove Bevy plugin"
-
-      - name: build wasm demo
-        run: |
-          cargo build --release --target wasm32-unknown-unknown --example bevy_ui
-          wasm-bindgen --out-dir wasm --out-name demo_leaderboard --target web target/wasm32-unknown-unknown/release/examples/bevy_ui.wasm
-          cp -r bevy-jornet/assets jornet-server-ui/public/
-          cp wasm/demo_leaderboard_bg.wasm jornet-server-ui/public/
-          cp wasm/demo_leaderboard.js jornet-server-ui/public/
 
       - name: build front
         run: |
