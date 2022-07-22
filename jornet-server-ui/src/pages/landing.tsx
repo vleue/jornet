@@ -22,7 +22,15 @@ class Landing extends Component {
                         <Col>&nbsp;</Col>
                     </Row>
                     <Row>
-                        <Col><a href="https://jornet.vleue.com/leaderboard/fb0bbe22-b047-494d-9519-1d36668fa5bc" target="_blank">View the example leaderboard</a></Col>
+                        <Col>
+                            <a
+                                href="https://jornet.vleue.com/leaderboard/fb0bbe22-b047-494d-9519-1d36668fa5bc"
+                                target="_blank"
+                                rel="noreferrer"
+                            >
+                                View the example leaderboard
+                            </a>
+                        </Col>
                     </Row>
                     <Row>
                         <Col><canvas id="demo-leaderboard"></canvas></Col>
