@@ -9,6 +9,7 @@ struct Score {
     score: f32,
     meta: Option<String>,
     timestamp: String,
+    player: Uuid,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -43,7 +44,7 @@ pub(crate) fn score() -> impl HttpServiceFactory {
 impl Score {
     pub async fn get_all(connection: &PgPool, leaderboard: &Uuid) -> Vec<Score> {
         sqlx::query!(
-            "SELECT score, meta, timestamp FROM scores WHERE leaderboard = $1",
+            "SELECT score, meta, timestamp, player FROM scores WHERE leaderboard = $1",
             leaderboard
         )
         .fetch_all(connection)
@@ -53,6 +54,7 @@ impl Score {
         .map(|r| Score {
             score: r.score,
             meta: r.meta.clone(),
+            player: r.player.clone(),
             timestamp: r
                 .timestamp
                 .assume_offset(UtcOffset::UTC)
