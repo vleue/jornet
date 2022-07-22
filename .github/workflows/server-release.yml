@@ -23,7 +23,9 @@ jobs:
         run: |
           rm -rf bevy-jornet
           cargo new --lib bevy-jornet
+          cargo update
           git add bevy-jornet
+          git add Cargo.lock
           git commit --message "remove Bevy plugin"
 
       - name: build front
