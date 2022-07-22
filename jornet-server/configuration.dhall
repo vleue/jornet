@@ -11,7 +11,7 @@ let database: types.DatabaseSettings =
 let github_admin_app: types.OAuth = 
     ./github_admin_app.dhall ?
     { client_id     = env:GITHUB_ADMIN_CLIENT_ID as Text ? "disabled"
-    , client_secret    = env:GITHUB_ADMIN_CLIENT_SECRET as Text ? "disabled"
+    , client_secret = env:GITHUB_ADMIN_CLIENT_SECRET as Text ? "disabled"
     }
 
 in
@@ -20,5 +20,5 @@ in
 , application_port  = env:PORT ? 8080
 , database          = database
 , private_key       = Some (env:BISCUIT_KEY as Text) ? Some (./private_key) ? None Text
-, github_admin_app = github_admin_app
+, github_admin_app  = github_admin_app
 }: types.Settings
