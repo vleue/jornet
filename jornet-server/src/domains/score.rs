@@ -62,7 +62,7 @@ impl Score {
         .map(|r| Score {
             score: r.score,
             meta: r.meta.clone(),
-            player: r.player.clone(),
+            player: r.player,
             timestamp: r
                 .timestamp
                 .assume_offset(UtcOffset::UTC)
