@@ -32,7 +32,7 @@ jobs:
           npm install
           npm run build
           cp -r build ../static
-          git add static
+          git add ../static
           git commit --message "Built front"
 
       - name: push branch
