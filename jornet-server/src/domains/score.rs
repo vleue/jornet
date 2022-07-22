@@ -1,3 +1,4 @@
+use actix_cors::Cors;
 use actix_web::{dev::HttpServiceFactory, web, HttpResponse, Responder};
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
@@ -36,7 +37,14 @@ async fn get_scores(connection: web::Data<PgPool>, leaderboard: web::Path<Uuid>)
 }
 
 pub(crate) fn score() -> impl HttpServiceFactory {
+    let cors = Cors::default()
+        .allow_any_header()
+        .allow_any_origin()
+        .allow_any_method()
+        .send_wildcard()
+        .max_age(3600);
     web::scope("api/scores")
+        .wrap(cors)
         .route("{leaderboard_id}", web::post().to(save_score))
         .route("{leaderboard_id}", web::get().to(get_scores))
 }
