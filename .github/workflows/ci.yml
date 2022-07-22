@@ -9,7 +9,7 @@ env:
 
 jobs:
   rust-test:
-    name: Rust Test
+    name: Server Test
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -75,10 +75,10 @@ jobs:
           cd jornet-server
           SKIP_DOCKER=true ./scripts/init_db.sh
 
-      - name: Run cargo test
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
+      - name: Run tests
+        run: |
+          cd jornet-server
+          cargo test
 
   rust-fmt:
     name: Rust format
