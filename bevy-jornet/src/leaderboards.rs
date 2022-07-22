@@ -6,10 +6,20 @@ use uuid::Uuid;
 
 use crate::http;
 
-#[derive(Default)]
 pub struct Leaderboards {
     key: Option<Uuid>,
     leaderboard: Arc<RwLock<Vec<Score>>>,
+    host: String,
+}
+
+impl Default for Leaderboards {
+    fn default() -> Self {
+        Self {
+            key: Default::default(),
+            leaderboard: Default::default(),
+            host: "https://jornet.vleue.com".to_string(),
+        }
+    }
 }
 
 impl Leaderboards {
@@ -20,6 +30,7 @@ impl Leaderboards {
     pub fn send_score(&mut self, score: f32) {
         let thread_pool = IoTaskPool::get();
         let key = self.key.unwrap();
+        let host = self.host.clone();
 
         let score_to_send = Some(Score {
             score,
@@ -29,11 +40,7 @@ impl Leaderboards {
         });
         thread_pool
             .spawn(async move {
-                http::post(
-                    &format!("{}/api/scores/{}", "http://localhost:3000", key),
-                    &score_to_send,
-                )
-                .await;
+                http::post(&format!("{}/api/scores/{}", host, key), &score_to_send).await;
             })
             .detach();
     }
@@ -41,13 +48,13 @@ impl Leaderboards {
     pub fn refresh_leaderboard(&self) {
         let thread_pool = IoTaskPool::get();
         let key = self.key.unwrap();
+        let host = self.host.clone();
 
         let leaderboard_to_update = self.leaderboard.clone();
 
         thread_pool
             .spawn(async move {
-                let scores =
-                    http::get(&format!("{}/api/scores/{}", "http://localhost:3000", key)).await;
+                let scores = http::get(&format!("{}/api/scores/{}", host, key)).await;
                 *leaderboard_to_update.write().unwrap() = scores;
             })
             .detach();

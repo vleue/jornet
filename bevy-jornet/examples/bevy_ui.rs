@@ -12,7 +12,7 @@ fn main() {
 }
 
 fn test(mut leaderboards: ResMut<Leaderboards>) {
-    leaderboards.set_dashboard(Uuid::parse_str("e8b14303-c48e-463e-95da-2aa63e96b5f6").unwrap());
+    leaderboards.set_dashboard(Uuid::parse_str("fb0bbe22-b047-494d-9519-1d36668fa5bc").unwrap());
     leaderboards.send_score(120.7);
     leaderboards.refresh_leaderboard();
 }
