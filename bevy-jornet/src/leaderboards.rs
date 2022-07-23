@@ -23,7 +23,7 @@ impl Leaderboard {
         }
     }
 
-    pub fn send_score(&mut self, score: f32) {
+    pub fn send_score(&self, score: f32) {
         let thread_pool = IoTaskPool::get();
         let key = self.key;
         let host = self.host.clone();
