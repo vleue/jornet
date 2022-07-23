@@ -1,35 +1,31 @@
 use std::sync::{Arc, RwLock};
 
-use bevy::tasks::IoTaskPool;
+use bevy::{prelude::ResMut, tasks::IoTaskPool};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::http;
 
-pub struct Leaderboards {
-    key: Option<Uuid>,
-    leaderboard: Arc<RwLock<Vec<Score>>>,
+pub struct Leaderboard {
+    key: Uuid,
+    leaderboard: Vec<Score>,
+    updating: Arc<RwLock<Vec<Score>>>,
     host: String,
 }
 
-impl Default for Leaderboards {
-    fn default() -> Self {
+impl Leaderboard {
+    pub(crate) fn with_leaderboard(key: Uuid) -> Self {
         Self {
-            key: Default::default(),
+            key,
             leaderboard: Default::default(),
+            updating: Default::default(),
             host: "https://jornet.vleue.com".to_string(),
         }
-    }
-}
-
-impl Leaderboards {
-    pub fn set_dashboard(&mut self, key: Uuid) {
-        self.key = Some(key);
     }
 
     pub fn send_score(&mut self, score: f32) {
         let thread_pool = IoTaskPool::get();
-        let key = self.key.unwrap();
+        let key = self.key;
         let host = self.host.clone();
 
         let score_to_send = Some(Score {
@@ -47,10 +43,10 @@ impl Leaderboards {
 
     pub fn refresh_leaderboard(&self) {
         let thread_pool = IoTaskPool::get();
-        let key = self.key.unwrap();
+        let key = self.key;
         let host = self.host.clone();
 
-        let leaderboard_to_update = self.leaderboard.clone();
+        let leaderboard_to_update = self.updating.clone();
 
         thread_pool
             .spawn(async move {
@@ -61,7 +57,19 @@ impl Leaderboards {
     }
 
     pub fn get_leaderboard(&self) -> Vec<Score> {
-        self.leaderboard.read().unwrap().clone()
+        self.leaderboard.clone()
+    }
+}
+
+pub fn done_refreshing_leaderboard(mut leaderboard: ResMut<Leaderboard>) {
+    if !leaderboard.updating.read().unwrap().is_empty() {
+        let updated = leaderboard
+            .updating
+            .write()
+            .unwrap()
+            .drain(..)
+            .collect::<Vec<_>>();
+        leaderboard.leaderboard = updated;
     }
 }
 
