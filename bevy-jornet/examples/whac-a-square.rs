@@ -33,14 +33,19 @@ fn main() {
             Uuid::parse_str("fb0bbe22-b047-494d-9519-1d36668fa5bc").unwrap(),
         ))
         .add_startup_system(setup)
-        .add_state(State::Game)
-        .add_system(display_scores)
-        .add_system_set(SystemSet::on_enter(State::Game).with_system(display_menu))
+        .add_state(GameState::Menu)
+        .add_system_set(SystemSet::on_enter(GameState::Menu).with_system(display_menu))
+        .add_system_set(
+            SystemSet::on_update(GameState::Menu)
+                .with_system(button_system)
+                .with_system(display_scores),
+        )
+        .add_system_set(SystemSet::on_exit(GameState::Menu).with_system(despawn_menu))
         .run();
 }
 
 #[derive(Clone, PartialEq, Eq, Debug, Hash)]
-enum State {
+enum GameState {
     Game,
     Menu,
 }
@@ -140,10 +145,39 @@ fn display_scores(
                         TextStyle {
                             font: asset_server.load("FiraSans-Bold.ttf"),
                             font_size: 40.0,
-                            color: Color::rgb(0.2, 0.3, 0.2),
+                            color: Color::hex(TEXT).unwrap(),
                         },
                     ));
                 });
+            }
+        }
+    }
+}
+
+fn despawn_menu(mut commands: Commands, root_ui: Query<Entity, (With<Node>, Without<Parent>)>) {
+    for entity in &root_ui {
+        commands.entity(entity).despawn_recursive();
+    }
+}
+
+fn button_system(
+    mut interaction_query: Query<
+        (&Interaction, &mut UiColor),
+        (Changed<Interaction>, With<Button>),
+    >,
+    mut state: ResMut<State<GameState>>,
+) {
+    for (interaction, mut color) in &mut interaction_query {
+        match *interaction {
+            Interaction::Clicked => {
+                *color = (Color::hex(BUTTON).unwrap() + Color::GRAY).into();
+                let _ = state.set(GameState::Game);
+            }
+            Interaction::Hovered => {
+                *color = (Color::hex(BUTTON).unwrap() + Color::DARK_GRAY).into();
+            }
+            Interaction::None => {
+                *color = Color::hex(BUTTON).unwrap().into();
             }
         }
     }
