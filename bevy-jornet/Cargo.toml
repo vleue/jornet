@@ -21,4 +21,4 @@ js-sys = "0.3"
 
 
 [dev-dependencies]
-bevy = { version = "0.8.0-dev" }
+bevy = { version = "0.8.0-dev", default-features = false, features = ["bevy_winit", "bevy_core_pipeline", "bevy_render", "bevy_sprite", "bevy_text", "bevy_ui"] }
