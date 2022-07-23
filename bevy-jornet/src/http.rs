@@ -41,10 +41,8 @@ pub(crate) async fn post<T: Serialize>(url: &str, body: T) {
         let request = Request::new_with_str_and_init(&url, &opts).unwrap();
 
         let window = web_sys::window().unwrap();
-        let resp_value = JsFuture::from(window.fetch_with_request(&request))
+        JsFuture::from(window.fetch_with_request(&request))
             .await
             .unwrap();
-        let resp: Response = resp_value.dyn_into().unwrap();
-        JsFuture::from(resp.json().unwrap()).await.unwrap();
     }
 }
