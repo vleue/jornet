@@ -10,6 +10,7 @@ use uuid::Uuid;
 fn main() {
     App::new()
         .insert_resource(WindowDescriptor {
+            title: "Whac-A-Square".to_string(),
             canvas: Some("#demo-leaderboard".to_string()),
             fit_canvas_to_parent: true,
             ..default()

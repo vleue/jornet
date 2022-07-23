@@ -26,8 +26,8 @@ jobs:
 
       - name: build wasm demo
         run: |
-          cargo build --release --target wasm32-unknown-unknown --example bevy_ui
-          wasm-bindgen --out-dir wasm --out-name demo_leaderboard --target web target/wasm32-unknown-unknown/release/examples/bevy_ui.wasm
+          cargo build --release --target wasm32-unknown-unknown --example whac-a-square
+          wasm-bindgen --out-dir wasm --out-name demo_leaderboard --target web target/wasm32-unknown-unknown/release/examples/whac-a-square.wasm
           cp -r bevy-jornet/assets jornet-server-ui/public/
           cp wasm/demo_leaderboard_bg.wasm jornet-server-ui/public/
           cp wasm/demo_leaderboard.js jornet-server-ui/public/
