@@ -28,15 +28,19 @@ impl Leaderboard {
         let key = self.key;
         let host = self.host.clone();
 
-        let score_to_send = Some(Score {
+        let score_to_send = Score {
             score,
             player: Uuid::new_v4(),
             timestamp: None,
             meta: None,
-        });
+        };
         thread_pool
             .spawn(async move {
-                http::post(&format!("{}/api/scores/{}", host, key), &score_to_send).await;
+                http::post(
+                    &format!("{}/api/scores/{}", host, key),
+                    &Some(score_to_send),
+                )
+                .await;
             })
             .detach();
     }
@@ -63,12 +67,14 @@ impl Leaderboard {
 
 pub fn done_refreshing_leaderboard(mut leaderboard: ResMut<Leaderboard>) {
     if !leaderboard.updating.read().unwrap().is_empty() {
-        let updated = leaderboard
+        let mut updated = leaderboard
             .updating
             .write()
             .unwrap()
             .drain(..)
             .collect::<Vec<_>>();
+        updated.sort_unstable_by(|s1, s2| s2.score.partial_cmp(&s1.score).unwrap());
+        updated.truncate(10);
         leaderboard.leaderboard = updated;
     }
 }
