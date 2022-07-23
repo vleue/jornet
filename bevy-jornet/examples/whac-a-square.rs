@@ -34,13 +34,7 @@ fn main() {
         ))
         .add_startup_system(setup)
         .add_state(GameState::Menu)
-        .add_system_set(SystemSet::on_enter(GameState::Menu).with_system(display_menu))
-        .add_system_set(
-            SystemSet::on_update(GameState::Menu)
-                .with_system(button_system)
-                .with_system(display_scores),
-        )
-        .add_system_set(SystemSet::on_exit(GameState::Menu).with_system(despawn_menu))
+        .add_plugin(menu::MenuPlugin)
         .run();
 }
 
@@ -55,129 +49,148 @@ fn setup(mut commands: Commands, leaderboards: Res<Leaderboard>) {
     leaderboards.refresh_leaderboard();
 }
 
-fn display_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands
-        .spawn_bundle(NodeBundle {
-            style: Style {
-                margin: UiRect::all(Val::Auto),
-                justify_content: JustifyContent::Center,
-                align_items: AlignItems::Center,
-                flex_direction: FlexDirection::ColumnReverse,
-                border: UiRect::all(Val::Px(30.0)),
+mod menu {
+    use bevy::prelude::*;
+    use bevy_jornet::Leaderboard;
+
+    use crate::{GameState, BACKGROUND, BUTTON, TEXT};
+    pub struct MenuPlugin;
+
+    impl Plugin for MenuPlugin {
+        fn build(&self, app: &mut App) {
+            app.add_system_set(SystemSet::on_enter(GameState::Menu).with_system(display_menu))
+                .add_system_set(
+                    SystemSet::on_update(GameState::Menu)
+                        .with_system(button_system)
+                        .with_system(display_scores),
+                )
+                .add_system_set(SystemSet::on_exit(GameState::Menu).with_system(despawn_menu));
+        }
+    }
+    fn display_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
+        commands
+            .spawn_bundle(NodeBundle {
+                style: Style {
+                    margin: UiRect::all(Val::Auto),
+                    justify_content: JustifyContent::Center,
+                    align_items: AlignItems::Center,
+                    flex_direction: FlexDirection::ColumnReverse,
+                    border: UiRect::all(Val::Px(30.0)),
+                    ..default()
+                },
+                color: Color::hex(BACKGROUND).unwrap().into(),
                 ..default()
-            },
-            color: Color::hex(BACKGROUND).unwrap().into(),
-            ..default()
-        })
-        .with_children(|parent| {
-            parent.spawn_bundle(TextBundle::from_section(
-                "Whac-A-Square",
-                TextStyle {
-                    font: asset_server.load("FiraSans-Bold.ttf"),
-                    font_size: 60.0,
-                    color: Color::hex(TEXT).unwrap(),
-                },
-            ));
-            parent.spawn_bundle(TextBundle::from_section(
-                "Jornet Leaderboard Demo",
-                TextStyle {
-                    font: asset_server.load("FiraSans-Bold.ttf"),
-                    font_size: 35.0,
-                    color: Color::hex(TEXT).unwrap(),
-                },
-            ));
-
-            parent
-                .spawn_bundle(NodeBundle {
-                    style: Style {
-                        size: Size::new(Val::Px(150.0), Val::Px(65.0)),
-                        flex_direction: FlexDirection::ColumnReverse,
-                        justify_content: JustifyContent::Center,
-                        align_items: AlignItems::Center,
-                        margin: UiRect::all(Val::Px(20.0)),
-                        ..default()
+            })
+            .with_children(|parent| {
+                parent.spawn_bundle(TextBundle::from_section(
+                    "Whac-A-Square",
+                    TextStyle {
+                        font: asset_server.load("FiraSans-Bold.ttf"),
+                        font_size: 60.0,
+                        color: Color::hex(TEXT).unwrap(),
                     },
-                    color: Color::NONE.into(),
-                    ..default()
-                })
-                .insert(LeaderboardMarker);
-
-            parent
-                .spawn_bundle(ButtonBundle {
-                    style: Style {
-                        size: Size::new(Val::Px(150.0), Val::Px(65.0)),
-                        justify_content: JustifyContent::Center,
-                        align_items: AlignItems::Center,
-                        ..default()
+                ));
+                parent.spawn_bundle(TextBundle::from_section(
+                    "Jornet Leaderboard Demo",
+                    TextStyle {
+                        font: asset_server.load("FiraSans-Bold.ttf"),
+                        font_size: 35.0,
+                        color: Color::hex(TEXT).unwrap(),
                     },
-                    color: Color::hex(BUTTON).unwrap().into(),
-                    ..default()
-                })
-                .with_children(|parent| {
-                    parent.spawn_bundle(TextBundle::from_section(
-                        "Play",
-                        TextStyle {
-                            font: asset_server.load("FiraSans-Bold.ttf"),
-                            font_size: 40.0,
-                            color: Color::hex(TEXT).unwrap(),
-                        },
-                    ));
-                });
-        });
-}
+                ));
 
-#[derive(Component)]
-struct LeaderboardMarker;
-
-fn display_scores(
-    leaderboard: Res<Leaderboard>,
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    root_ui: Query<Entity, (With<Node>, With<LeaderboardMarker>)>,
-) {
-    if leaderboard.is_changed() {
-        info!("displaying leaderboard");
-        if let Ok(root_ui) = root_ui.get_single() {
-            for score in leaderboard.get_leaderboard() {
-                commands.entity(root_ui).with_children(|parent| {
-                    parent.spawn_bundle(TextBundle::from_section(
-                        format!("{} ", score.score),
-                        TextStyle {
-                            font: asset_server.load("FiraSans-Bold.ttf"),
-                            font_size: 40.0,
-                            color: Color::hex(TEXT).unwrap(),
+                parent
+                    .spawn_bundle(NodeBundle {
+                        style: Style {
+                            size: Size::new(Val::Px(150.0), Val::Px(65.0)),
+                            flex_direction: FlexDirection::ColumnReverse,
+                            justify_content: JustifyContent::Center,
+                            align_items: AlignItems::Center,
+                            margin: UiRect::all(Val::Px(20.0)),
+                            ..default()
                         },
-                    ));
-                });
+                        color: Color::NONE.into(),
+                        ..default()
+                    })
+                    .insert(LeaderboardMarker);
+
+                parent
+                    .spawn_bundle(ButtonBundle {
+                        style: Style {
+                            size: Size::new(Val::Px(150.0), Val::Px(65.0)),
+                            justify_content: JustifyContent::Center,
+                            align_items: AlignItems::Center,
+                            ..default()
+                        },
+                        color: Color::hex(BUTTON).unwrap().into(),
+                        ..default()
+                    })
+                    .with_children(|parent| {
+                        parent.spawn_bundle(TextBundle::from_section(
+                            "Play",
+                            TextStyle {
+                                font: asset_server.load("FiraSans-Bold.ttf"),
+                                font_size: 40.0,
+                                color: Color::hex(TEXT).unwrap(),
+                            },
+                        ));
+                    });
+            });
+    }
+
+    #[derive(Component)]
+    struct LeaderboardMarker;
+
+    fn display_scores(
+        leaderboard: Res<Leaderboard>,
+        mut commands: Commands,
+        asset_server: Res<AssetServer>,
+        root_ui: Query<Entity, (With<Node>, With<LeaderboardMarker>)>,
+    ) {
+        if leaderboard.is_changed() {
+            info!("displaying leaderboard");
+            if let Ok(root_ui) = root_ui.get_single() {
+                for score in leaderboard.get_leaderboard() {
+                    commands.entity(root_ui).with_children(|parent| {
+                        parent.spawn_bundle(TextBundle::from_section(
+                            format!("{} ", score.score),
+                            TextStyle {
+                                font: asset_server.load("FiraSans-Bold.ttf"),
+                                font_size: 40.0,
+                                color: Color::hex(TEXT).unwrap(),
+                            },
+                        ));
+                    });
+                }
             }
         }
     }
-}
 
-fn despawn_menu(mut commands: Commands, root_ui: Query<Entity, (With<Node>, Without<Parent>)>) {
-    for entity in &root_ui {
-        commands.entity(entity).despawn_recursive();
+    fn despawn_menu(mut commands: Commands, root_ui: Query<Entity, (With<Node>, Without<Parent>)>) {
+        for entity in &root_ui {
+            commands.entity(entity).despawn_recursive();
+        }
     }
-}
 
-fn button_system(
-    mut interaction_query: Query<
-        (&Interaction, &mut UiColor),
-        (Changed<Interaction>, With<Button>),
-    >,
-    mut state: ResMut<State<GameState>>,
-) {
-    for (interaction, mut color) in &mut interaction_query {
-        match *interaction {
-            Interaction::Clicked => {
-                *color = (Color::hex(BUTTON).unwrap() + Color::GRAY).into();
-                let _ = state.set(GameState::Game);
-            }
-            Interaction::Hovered => {
-                *color = (Color::hex(BUTTON).unwrap() + Color::DARK_GRAY).into();
-            }
-            Interaction::None => {
-                *color = Color::hex(BUTTON).unwrap().into();
+    fn button_system(
+        mut interaction_query: Query<
+            (&Interaction, &mut UiColor),
+            (Changed<Interaction>, With<Button>),
+        >,
+        mut state: ResMut<State<GameState>>,
+    ) {
+        for (interaction, mut color) in &mut interaction_query {
+            match *interaction {
+                Interaction::Clicked => {
+                    *color = (Color::hex(BUTTON).unwrap() + Color::GRAY).into();
+                    let _ = state.set(GameState::Game);
+                }
+                Interaction::Hovered => {
+                    *color = (Color::hex(BUTTON).unwrap() + Color::DARK_GRAY).into();
+                }
+                Interaction::None => {
+                    *color = Color::hex(BUTTON).unwrap().into();
+                }
             }
         }
     }
