@@ -157,7 +157,6 @@ mod menu {
         root_ui: Query<Entity, (With<Node>, With<LeaderboardMarker>)>,
     ) {
         if leaderboard.is_changed() {
-            info!("displaying leaderboard");
             if let Ok(root_ui) = root_ui.get_single() {
                 commands.entity(root_ui).despawn_descendants();
                 for score in leaderboard.get_leaderboard() {
