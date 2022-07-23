@@ -1,16 +1,10 @@
-use std::time::Duration;
-
 const CLEAR: &str = "023047";
 const BACKGROUND: &str = "fb8500";
 const BUTTON: &str = "ffb703";
 const TEXT: &str = "8ecae6";
 const SQUARE: &str = "219ebc";
 
-use bevy::{
-    prelude::*,
-    time::Stopwatch,
-    winit::{UpdateMode, WinitSettings},
-};
+use bevy::{prelude::*, time::Stopwatch};
 use bevy_jornet::JornetPlugin;
 use uuid::Uuid;
 
@@ -24,12 +18,6 @@ fn main() {
         })
         .insert_resource(ClearColor(Color::hex(CLEAR).unwrap()))
         .add_plugins(DefaultPlugins)
-        .insert_resource(WinitSettings {
-            focused_mode: UpdateMode::Reactive {
-                max_wait: Duration::from_secs_f32(0.1),
-            },
-            ..WinitSettings::desktop_app()
-        })
         .add_plugin(JornetPlugin::with_leaderboard(
             Uuid::parse_str("fb0bbe22-b047-494d-9519-1d36668fa5bc").unwrap(),
         ))
@@ -53,7 +41,12 @@ fn setup(mut commands: Commands) {
 }
 
 mod menu {
-    use bevy::prelude::*;
+    use std::time::Duration;
+
+    use bevy::{
+        prelude::*,
+        winit::{UpdateMode, WinitSettings},
+    };
     use bevy_jornet::Leaderboard;
 
     use crate::{GameState, BACKGROUND, BUTTON, TEXT};
@@ -76,6 +69,12 @@ mod menu {
         asset_server: Res<AssetServer>,
         leaderboard: Res<Leaderboard>,
     ) {
+        commands.insert_resource(WinitSettings {
+            focused_mode: UpdateMode::Reactive {
+                max_wait: Duration::from_secs_f32(0.5),
+            },
+            ..WinitSettings::desktop_app()
+        });
         commands
             .spawn_bundle(NodeBundle {
                 style: Style {
@@ -212,7 +211,14 @@ struct GameStatus {
 }
 
 mod game {
-    use bevy::{prelude::*, sprite::collide_aabb::collide, time::Stopwatch};
+    use std::time::Duration;
+
+    use bevy::{
+        prelude::*,
+        sprite::collide_aabb::collide,
+        time::Stopwatch,
+        winit::{UpdateMode, WinitSettings},
+    };
     use bevy_jornet::Leaderboard;
     use rand::Rng;
 
@@ -234,6 +240,12 @@ mod game {
     }
 
     fn setup_game(mut commands: Commands, asset_server: Res<AssetServer>) {
+        commands.insert_resource(WinitSettings {
+            focused_mode: UpdateMode::Reactive {
+                max_wait: Duration::from_secs_f32(0.05),
+            },
+            ..WinitSettings::desktop_app()
+        });
         commands.insert_resource(GameStatus {
             score: 0,
             time_to_click: Timer::from_seconds(10.0, false),
