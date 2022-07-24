@@ -23,7 +23,7 @@ jobs:
         run: |
           rustup target add wasm32-unknown-unknown
           cargo install wasm-bindgen-cli
-          apt-get install -y binaryen
+          sudo apt-get install -y binaryen
 
       - name: build wasm demo
         run: |
