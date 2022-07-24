@@ -8,3 +8,9 @@ resolver = "2"
 
 [patch.crates-io]
 bevy = { git = "https://github.com/bevyengine/bevy" }
+
+[profile.wasm-release]
+inherits = "release"
+opt-level = "z"
+lto = "fat"
+codegen-units = 1
