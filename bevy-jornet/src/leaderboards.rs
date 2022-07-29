@@ -23,6 +23,7 @@ impl Leaderboard {
             leaderboard: Default::default(),
             updating: Default::default(),
             host: "https://jornet.vleue.com".to_string(),
+            player: Default::default(),
         }
     }
 
