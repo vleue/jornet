@@ -7,6 +7,7 @@ type Score = {
     score: number,
     meta?: string,
     timestamp: string,
+    player: string,
 }
 
 type LeaderboardProps = {
@@ -41,6 +42,7 @@ class LeaderboardInner extends Component<LeaderboardProps, LeaderboardState> {
                             <thead>
                                 <tr>
                                     <th>Score</th>
+                                    <th>Player</th>
                                     <th>Timestamp</th>
                                     <th>Meta</th>
                                 </tr>
@@ -50,6 +52,7 @@ class LeaderboardInner extends Component<LeaderboardProps, LeaderboardState> {
                                     this.state.scores.map((score, index) => {
                                         return <tr key={index}>
                                             <td>{score.score}</td>
+                                            <td>{score.player}</td>
                                             <td>{score.timestamp}</td>
                                             <td>{score.meta}</td>
                                         </tr>
