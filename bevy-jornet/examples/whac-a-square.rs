@@ -110,8 +110,7 @@ mod menu {
                 parent
                     .spawn_bundle(NodeBundle {
                         style: Style {
-                            size: Size::new(Val::Px(150.0), Val::Undefined),
-                            flex_direction: FlexDirection::ColumnReverse,
+                            flex_direction: FlexDirection::Row,
                             justify_content: JustifyContent::Center,
                             align_items: AlignItems::Center,
                             margin: UiRect::all(Val::Px(20.0)),
@@ -120,7 +119,36 @@ mod menu {
                         color: Color::NONE.into(),
                         ..default()
                     })
-                    .insert(LeaderboardMarker);
+                    .with_children(|parent| {
+                        parent
+                            .spawn_bundle(NodeBundle {
+                                style: Style {
+                                    size: Size::new(Val::Px(300.0), Val::Undefined),
+                                    flex_direction: FlexDirection::ColumnReverse,
+                                    justify_content: JustifyContent::Center,
+                                    align_items: AlignItems::Center,
+                                    margin: UiRect::all(Val::Px(20.0)),
+                                    ..default()
+                                },
+                                color: Color::NONE.into(),
+                                ..default()
+                            })
+                            .insert(LeaderboardMarker::Player);
+                        parent
+                            .spawn_bundle(NodeBundle {
+                                style: Style {
+                                    size: Size::new(Val::Px(150.0), Val::Undefined),
+                                    flex_direction: FlexDirection::ColumnReverse,
+                                    justify_content: JustifyContent::Center,
+                                    align_items: AlignItems::Center,
+                                    margin: UiRect::all(Val::Px(20.0)),
+                                    ..default()
+                                },
+                                color: Color::NONE.into(),
+                                ..default()
+                            })
+                            .insert(LeaderboardMarker::Score);
+                    });
 
                 parent
                     .spawn_bundle(ButtonBundle {
@@ -178,24 +206,31 @@ mod menu {
     }
 
     #[derive(Component)]
-    struct LeaderboardMarker;
+    enum LeaderboardMarker {
+        Score,
+        Player,
+    }
 
     fn display_scores(
         leaderboard: Res<Leaderboard>,
         mut commands: Commands,
         asset_server: Res<AssetServer>,
-        root_ui: Query<Entity, (With<Node>, With<LeaderboardMarker>)>,
+        root_ui: Query<(Entity, &LeaderboardMarker)>,
     ) {
         if leaderboard.is_changed() {
-            if let Ok(root_ui) = root_ui.get_single() {
-                commands.entity(root_ui).despawn_descendants();
-                for score in leaderboard.get_leaderboard() {
-                    commands.entity(root_ui).with_children(|parent| {
+            let leaderboard = leaderboard.get_leaderboard();
+            for (root_entity, marker) in &root_ui {
+                commands.entity(root_entity).despawn_descendants();
+                for score in &leaderboard {
+                    commands.entity(root_entity).with_children(|parent| {
                         parent.spawn_bundle(TextBundle::from_section(
-                            format!("{} ", score.score),
+                            match marker {
+                                LeaderboardMarker::Score => format!("{} ", score.score),
+                                LeaderboardMarker::Player => score.player.clone(),
+                            },
                             TextStyle {
                                 font: asset_server.load("FiraSans-Bold.ttf"),
-                                font_size: 40.0,
+                                font_size: 30.0,
                                 color: Color::hex(TEXT).unwrap(),
                             },
                         ));
