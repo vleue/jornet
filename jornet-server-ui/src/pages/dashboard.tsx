@@ -38,7 +38,7 @@ class DashboardInner extends Component<DashboardProps, DashboardState> {
         if (this.props.token === undefined) {
             return;
         }
-        fetch("/api/admin/whoami", { headers: { Authorization: 'Bearer ' + this.props.token! } })
+        fetch("/api/v1/admin/whoami", { headers: { Authorization: 'Bearer ' + this.props.token! } })
             .then(response => response.json())
             .then(data => {
                 if (data.github?.login === undefined) {
@@ -51,7 +51,7 @@ class DashboardInner extends Component<DashboardProps, DashboardState> {
                 this.props.setLoginInfo(undefined);
                 this.props.setToken(undefined);
             });
-        fetch("/api/leaderboards", { headers: { Authorization: 'Bearer ' + this.props.token! } })
+        fetch("/api/v1/leaderboards", { headers: { Authorization: 'Bearer ' + this.props.token! } })
             .then(response => response.json())
             .then(data => {
                 this.setState({ leaderboards: data });
@@ -176,7 +176,7 @@ class DashboardInner extends Component<DashboardProps, DashboardState> {
             },
             body: JSON.stringify({ name: this.state.new_leaderboard })
         };
-        fetch('/api/leaderboards', requestOptions)
+        fetch('/api/v1/leaderboards', requestOptions)
             .then(response => response.json())
             .then(data => {
                 var leaderboards = this.state.leaderboards;

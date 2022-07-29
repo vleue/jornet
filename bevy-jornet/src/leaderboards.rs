@@ -43,7 +43,7 @@ impl Leaderboard {
         thread_pool
             .spawn(async move {
                 let player: Player =
-                    http::post(&format!("{}/api/players", host), &Some(player)).await;
+                    http::post(&format!("{}/api/v1/players", host), &Some(player)).await;
                 *complete_player.write().unwrap() = Some(player);
             })
             .detach();
@@ -59,7 +59,7 @@ impl Leaderboard {
         thread_pool
             .spawn(async move {
                 http::post_and_forget(
-                    &format!("{}/api/scores/{}", host, key),
+                    &format!("{}/api/v1/scores/{}", host, key),
                     &Some(score_to_send),
                 )
                 .await;
@@ -78,7 +78,7 @@ impl Leaderboard {
 
         thread_pool
             .spawn(async move {
-                let scores = http::get(&format!("{}/api/scores/{}", host, key)).await;
+                let scores = http::get(&format!("{}/api/v1/scores/{}", host, key)).await;
                 *leaderboard_to_update.write().unwrap() = scores;
             })
             .detach();

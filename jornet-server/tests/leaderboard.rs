@@ -27,7 +27,7 @@ async fn create_leaderboard() {
         .expect("got body");
 
     let response = client
-        .post(&format!("{}/api/leaderboards", app.address))
+        .post(&format!("{}/api/v1/leaderboards", app.address))
         .bearer_auth(token.token)
         .json(&LeaderboardInput {
             name: "my leaderboard".to_string(),

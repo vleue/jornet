@@ -15,7 +15,7 @@ async fn create_player() {
     let client = reqwest::Client::new();
 
     let response = client
-        .post(&format!("{}/api/players", app.address))
+        .post(&format!("{}/api/v1/players", app.address))
         .json(&PlayerInput {
             name: Some("hello".to_string()),
         })
@@ -33,7 +33,7 @@ async fn create_player_with_random_name() {
     let client = reqwest::Client::new();
 
     let response = client
-        .post(&format!("{}/api/players", app.address))
+        .post(&format!("{}/api/v1/players", app.address))
         .json(&PlayerInput { name: None })
         .send()
         .await

@@ -48,7 +48,7 @@ pub struct GithubUser {
 }
 
 pub(crate) fn admin(kp: web::Data<KeyPair>) -> impl HttpServiceFactory {
-    web::scope("api/admin")
+    web::scope("api/v1/admin")
         .app_data(kp)
         .wrap(HttpAuthentication::bearer(validator))
         .route("whoami", web::get().to(whoami))

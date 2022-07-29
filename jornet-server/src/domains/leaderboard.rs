@@ -51,7 +51,7 @@ async fn get_leaderboards(
 }
 
 pub(crate) fn leaderboard(kp: web::Data<KeyPair>) -> impl HttpServiceFactory {
-    web::scope("api/leaderboards")
+    web::scope("api/v1/leaderboards")
         .app_data(kp)
         .wrap(HttpAuthentication::bearer(validator))
         .route("", web::post().to(new_leaderboard))

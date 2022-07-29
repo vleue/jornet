@@ -42,7 +42,7 @@ pub(crate) fn player() -> impl HttpServiceFactory {
         .allow_any_method()
         .send_wildcard()
         .max_age(3600);
-    web::scope("api/players")
+    web::scope("api/v1/players")
         .wrap(cors)
         .route("", web::post().to(create_player))
 }

@@ -20,7 +20,7 @@ async fn save_score() {
     let client = reqwest::Client::new();
 
     let player = client
-        .post(&format!("{}/api/players", app.address))
+        .post(&format!("{}/api/v1/players", app.address))
         .json(&PlayerInput { name: None })
         .send()
         .await
@@ -42,7 +42,7 @@ async fn save_score() {
         .expect("got body");
 
     let leaderboard = client
-        .post(&format!("{}/api/leaderboards", app.address))
+        .post(&format!("{}/api/v1/leaderboards", app.address))
         .bearer_auth(token.token)
         .json(&LeaderboardInput {
             name: "my leaderboard".to_string(),
@@ -55,7 +55,7 @@ async fn save_score() {
         .expect("valid leaderboard");
 
     let response = client
-        .post(&format!("{}/api/scores/{}", app.address, leaderboard.id))
+        .post(&format!("{}/api/v1/scores/{}", app.address, leaderboard.id))
         .json(&ScoreInput::new(543.21, player, None))
         .send()
         .await
@@ -70,7 +70,7 @@ async fn save_score_to_missing_dashboard() {
     let client = reqwest::Client::new();
 
     let player = client
-        .post(&format!("{}/api/players", app.address))
+        .post(&format!("{}/api/v1/players", app.address))
         .json(&PlayerInput { name: None })
         .send()
         .await
@@ -80,7 +80,7 @@ async fn save_score_to_missing_dashboard() {
         .unwrap();
 
     let response = client
-        .post(&format!("{}/api/scores/{}", app.address, Uuid::new_v4()))
+        .post(&format!("{}/api/v1/scores/{}", app.address, Uuid::new_v4()))
         .json(&ScoreInput::new(543.21, player, None))
         .send()
         .await
@@ -95,7 +95,7 @@ async fn save_score_wrong_hmac() {
     let client = reqwest::Client::new();
 
     let player = client
-        .post(&format!("{}/api/players", app.address))
+        .post(&format!("{}/api/v1/players", app.address))
         .json(&PlayerInput { name: None })
         .send()
         .await
@@ -115,7 +115,7 @@ async fn save_score_wrong_hmac() {
         .expect("got body");
 
     let leaderboard = client
-        .post(&format!("{}/api/leaderboards", app.address))
+        .post(&format!("{}/api/v1/leaderboards", app.address))
         .bearer_auth(token.token)
         .json(&LeaderboardInput {
             name: "my leaderboard".to_string(),
@@ -128,7 +128,7 @@ async fn save_score_wrong_hmac() {
         .expect("valid leaderboard");
 
     let response = client
-        .post(&format!("{}/api/scores/{}", app.address, leaderboard.id))
+        .post(&format!("{}/api/v1/scores/{}", app.address, leaderboard.id))
         .json(&ScoreInput {
             score: 543.21,
             player: Uuid::new_v4(),
@@ -166,7 +166,7 @@ async fn save_score_unknown_player() {
         .expect("got body");
 
     let leaderboard = client
-        .post(&format!("{}/api/leaderboards", app.address))
+        .post(&format!("{}/api/v1/leaderboards", app.address))
         .bearer_auth(token.token)
         .json(&LeaderboardInput {
             name: "my leaderboard".to_string(),
@@ -179,7 +179,7 @@ async fn save_score_unknown_player() {
         .expect("valid leaderboard");
 
     let response = client
-        .post(&format!("{}/api/scores/{}", app.address, leaderboard.id))
+        .post(&format!("{}/api/v1/scores/{}", app.address, leaderboard.id))
         .json(&ScoreInput::new(543.21, player, None))
         .send()
         .await
@@ -194,7 +194,7 @@ async fn save_score_wrong_key() {
     let client = reqwest::Client::new();
 
     let mut player = client
-        .post(&format!("{}/api/players", app.address))
+        .post(&format!("{}/api/v1/players", app.address))
         .json(&PlayerInput { name: None })
         .send()
         .await
@@ -218,7 +218,7 @@ async fn save_score_wrong_key() {
         .expect("got body");
 
     let leaderboard = client
-        .post(&format!("{}/api/leaderboards", app.address))
+        .post(&format!("{}/api/v1/leaderboards", app.address))
         .bearer_auth(token.token)
         .json(&LeaderboardInput {
             name: "my leaderboard".to_string(),
@@ -231,7 +231,7 @@ async fn save_score_wrong_key() {
         .expect("valid leaderboard");
 
     let response = client
-        .post(&format!("{}/api/scores/{}", app.address, leaderboard.id))
+        .post(&format!("{}/api/v1/scores/{}", app.address, leaderboard.id))
         .json(&ScoreInput::new(543.21, player, None))
         .send()
         .await

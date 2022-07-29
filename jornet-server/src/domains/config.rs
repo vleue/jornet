@@ -15,7 +15,7 @@ async fn get_oauth_config(config: web::Data<Settings>) -> impl Responder {
 }
 
 pub(crate) fn config(config: web::Data<Settings>) -> Scope {
-    web::scope("api/config")
+    web::scope("api/v1/config")
         .app_data(config)
         .route("oauth", web::get().to(get_oauth_config))
 }

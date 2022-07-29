@@ -23,7 +23,7 @@ class ConnectInner extends Component<ConnectProps, ConnectState> {
         is_from_callback: false,
     };
     componentDidMount() {
-        fetch('/api/config/oauth')
+        fetch('/api/v1/config/oauth')
             .then(response => response.json())
             .then(data => this.setState({ github_app_id: data.github_app_id }));
         let code = this.props.searchParams!.get("code");

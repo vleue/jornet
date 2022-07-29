@@ -23,7 +23,7 @@ class LeaderboardInner extends Component<LeaderboardProps, LeaderboardState> {
         scores: []
     };
     componentDidMount() {
-        fetch("/api/scores/" + this.props.leaderboardId)
+        fetch("/api/v1/scores/" + this.props.leaderboardId)
             .then(response => response.json())
             .then(data => {
                 this.setState({ scores: data });

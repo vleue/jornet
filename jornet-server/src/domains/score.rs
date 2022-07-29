@@ -82,7 +82,7 @@ pub(crate) fn score() -> impl HttpServiceFactory {
         .allow_any_method()
         .send_wildcard()
         .max_age(3600);
-    web::scope("api/scores")
+    web::scope("api/v1/scores")
         .wrap(cors)
         .route("{leaderboard_id}", web::post().to(save_score))
         .route("{leaderboard_id}", web::get().to(get_scores))
