@@ -9,7 +9,7 @@ pub fn random_name() -> String {
     )
 }
 
-const POKEMONS: &'static [&'static str] = &[
+const POKEMONS: &[&str] = &[
     "Bulbasaur",
     "Ivysaur",
     "Venusaur",
@@ -823,7 +823,7 @@ const POKEMONS: &'static [&'static str] = &[
     "Beedrill-Mega",
 ];
 
-const ADJECTIVES: &'static [&'static str] = &[
+const ADJECTIVES: &[&str] = &[
     "Acidic",
     "Adorable",
     "Adventurous",
