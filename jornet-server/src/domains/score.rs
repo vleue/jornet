@@ -61,12 +61,8 @@ async fn save_score(
     leaderboard: web::Path<Uuid>,
 ) -> impl Responder {
     if let Some(player) = Player::get(score.player, &connection).await {
-        if score.verify_mac(player.key) {
-            if Score::save(&score, &connection, &leaderboard).await {
-                HttpResponse::Ok().finish()
-            } else {
-                HttpResponse::InternalServerError().finish()
-            }
+        if score.verify_mac(player.key) && Score::save(&score, &connection, &leaderboard).await {
+            HttpResponse::Ok().finish()
         } else {
             HttpResponse::InternalServerError().finish()
         }
