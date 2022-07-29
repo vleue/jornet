@@ -2341,6 +2341,7 @@ dependencies = [
  "biscuit-auth",
  "hex",
  "hmac",
+ "rand 0.8.5",
  "reqwest",
  "serde",
  "serde_dhall",

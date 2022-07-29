@@ -13,6 +13,7 @@ use sqlx::PgPool;
 pub mod auth_admin;
 pub mod configuration;
 pub mod domains;
+pub mod random_name;
 
 async fn spa(req: HttpRequest) -> Result<NamedFile> {
     let path: PathBuf = req.match_info().query("filename").parse().unwrap();

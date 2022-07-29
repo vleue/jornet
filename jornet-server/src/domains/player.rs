@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use uuid::Uuid;
 
+use crate::random_name::random_name;
+
 #[derive(Serialize, Deserialize)]
 pub struct Player {
     pub id: Uuid,
@@ -13,7 +15,7 @@ pub struct Player {
 
 #[derive(Deserialize, Serialize)]
 pub struct PlayerInput {
-    pub name: String,
+    pub name: Option<String>,
 }
 
 async fn create_player(
@@ -21,7 +23,7 @@ async fn create_player(
     player: web::Json<PlayerInput>,
 ) -> impl Responder {
     let player = Player {
-        name: player.name.clone(),
+        name: player.name.clone().unwrap_or_else(random_name),
         id: Uuid::new_v4(),
         key: Uuid::new_v4(),
     };

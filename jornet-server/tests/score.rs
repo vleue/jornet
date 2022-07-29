@@ -21,9 +21,7 @@ async fn save_score() {
 
     let player = client
         .post(&format!("{}/api/players", app.address))
-        .json(&PlayerInput {
-            name: "hello".to_string(),
-        })
+        .json(&PlayerInput { name: None })
         .send()
         .await
         .expect("Failed to execute request.")
@@ -73,9 +71,7 @@ async fn save_score_to_missing_dashboard() {
 
     let player = client
         .post(&format!("{}/api/players", app.address))
-        .json(&PlayerInput {
-            name: "hello".to_string(),
-        })
+        .json(&PlayerInput { name: None })
         .send()
         .await
         .expect("Failed to execute request.")
@@ -100,9 +96,7 @@ async fn save_score_wrong_hmac() {
 
     let player = client
         .post(&format!("{}/api/players", app.address))
-        .json(&PlayerInput {
-            name: "hello".to_string(),
-        })
+        .json(&PlayerInput { name: None })
         .send()
         .await
         .expect("Failed to execute request.")
@@ -201,9 +195,7 @@ async fn save_score_wrong_key() {
 
     let mut player = client
         .post(&format!("{}/api/players", app.address))
-        .json(&PlayerInput {
-            name: "hello".to_string(),
-        })
+        .json(&PlayerInput { name: None })
         .send()
         .await
         .expect("Failed to execute request.")
