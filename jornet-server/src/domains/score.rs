@@ -45,7 +45,7 @@ impl ScoreInput {
             mac.update(meta.as_bytes());
         }
 
-        let hmac = dbg!(hex::encode(&mac.finalize().into_bytes()[..]));
+        let hmac = hex::encode(&mac.finalize().into_bytes()[..]);
         Self {
             score,
             player: player.id,
