@@ -564,7 +564,7 @@ const POKEMONS: &[&str] = &[
     "Krokorok",
     "Krookodile",
     "Darumaka",
-    "Darmanitan-Standard",
+    "Darmanitan",
     "Maractus",
     "Dwebble",
     "Crustle",
