@@ -5,7 +5,7 @@ const TEXT: &str = "8ecae6";
 const SQUARE: &str = "219ebc";
 
 use bevy::{prelude::*, time::Stopwatch};
-use bevy_jornet::JornetPlugin;
+use bevy_jornet::{JornetPlugin, Leaderboard};
 use uuid::Uuid;
 
 fn main() {
@@ -36,8 +36,9 @@ enum GameState {
     Done,
 }
 
-fn setup(mut commands: Commands) {
+fn setup(mut commands: Commands, mut leaderboard: ResMut<Leaderboard>) {
     commands.spawn_bundle(Camera2dBundle::default());
+    leaderboard.create_player("Paul");
 }
 
 mod menu {
