@@ -1,6 +1,8 @@
 use actix_cors::Cors;
 use actix_web::{dev::HttpServiceFactory, web, HttpResponse, Responder};
+use hmac::{Hmac, Mac};
 use serde::{Deserialize, Serialize};
+use sha2::Sha256;
 use sqlx::PgPool;
 use time::{format_description::well_known::Rfc3339, UtcOffset};
 use uuid::Uuid;
@@ -18,6 +20,37 @@ pub struct ScoreInput {
     pub score: f32,
     pub player: Uuid,
     pub meta: Option<String>,
+    pub hmac: String,
+}
+
+impl ScoreInput {
+    pub fn verify_mac(&self, key: &str) -> bool {
+        let mut mac = Hmac::<Sha256>::new_from_slice(key.as_bytes()).unwrap();
+        mac.update(self.player.as_bytes());
+        mac.update(&self.score.to_le_bytes());
+        if let Some(meta) = self.meta.as_ref() {
+            mac.update(meta.as_bytes());
+        }
+        mac.verify_slice(hex::decode(&self.hmac).unwrap().as_slice())
+            .is_ok()
+    }
+
+    pub fn new(score: f32, player: Uuid, meta: Option<String>, key: &str) -> Self {
+        let mut mac = Hmac::<Sha256>::new_from_slice(key.as_bytes()).unwrap();
+        mac.update(player.as_bytes());
+        mac.update(&score.to_le_bytes());
+        if let Some(meta) = meta.as_ref() {
+            mac.update(meta.as_bytes());
+        }
+
+        let hmac = dbg!(hex::encode(&mac.finalize().into_bytes()[..]));
+        Self {
+            score,
+            player,
+            meta,
+            hmac,
+        }
+    }
 }
 
 async fn save_score(
@@ -25,8 +58,12 @@ async fn save_score(
     score: web::Json<ScoreInput>,
     leaderboard: web::Path<Uuid>,
 ) -> impl Responder {
-    if Score::save(&score, &connection, &leaderboard).await {
-        HttpResponse::Ok().finish()
+    if score.verify_mac("hello") {
+        if Score::save(&score, &connection, &leaderboard).await {
+            HttpResponse::Ok().finish()
+        } else {
+            HttpResponse::InternalServerError().finish()
+        }
     } else {
         HttpResponse::InternalServerError().finish()
     }
