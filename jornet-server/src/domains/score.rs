@@ -12,7 +12,7 @@ struct Score {
     score: f32,
     meta: Option<String>,
     timestamp: String,
-    player: Uuid,
+    player: String,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -89,7 +89,7 @@ pub(crate) fn score() -> impl HttpServiceFactory {
 impl Score {
     pub async fn get_all(connection: &PgPool, leaderboard: &Uuid) -> Vec<Score> {
         sqlx::query!(
-            "SELECT score, meta, timestamp, player FROM scores WHERE leaderboard = $1",
+            "SELECT score, meta, timestamp, players.name FROM scores, players WHERE leaderboard = $1 and scores.player = players.id",
             leaderboard
         )
         .fetch_all(connection)
@@ -99,7 +99,7 @@ impl Score {
         .map(|r| Score {
             score: r.score,
             meta: r.meta.clone(),
-            player: r.player,
+            player: r.name.clone(),
             timestamp: r
                 .timestamp
                 .assume_offset(UtcOffset::UTC)
@@ -110,6 +110,13 @@ impl Score {
     }
 
     pub async fn save(score: &ScoreInput, connection: &PgPool, leaderboard: &Uuid) -> bool {
+        if sqlx::query!("SELECT id FROM players WHERE id = $1", score.player)
+            .fetch_one(connection)
+            .await
+            .is_err()
+        {
+            return false;
+        }
         if sqlx::query!("SELECT id FROM leaderboards WHERE id = $1", leaderboard)
             .fetch_one(connection)
             .await
