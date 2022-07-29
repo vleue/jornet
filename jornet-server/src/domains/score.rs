@@ -7,6 +7,8 @@ use sqlx::PgPool;
 use time::{format_description::well_known::Rfc3339, UtcOffset};
 use uuid::Uuid;
 
+use super::player::Player;
+
 #[derive(Serialize)]
 struct Score {
     score: f32,
@@ -24,7 +26,7 @@ pub struct ScoreInput {
 }
 
 impl ScoreInput {
-    pub fn verify_mac(&self, key: &str) -> bool {
+    pub fn verify_mac(&self, key: Uuid) -> bool {
         let mut mac = Hmac::<Sha256>::new_from_slice(key.as_bytes()).unwrap();
         mac.update(self.player.as_bytes());
         mac.update(&self.score.to_le_bytes());
@@ -35,9 +37,9 @@ impl ScoreInput {
             .is_ok()
     }
 
-    pub fn new(score: f32, player: Uuid, meta: Option<String>, key: &str) -> Self {
-        let mut mac = Hmac::<Sha256>::new_from_slice(key.as_bytes()).unwrap();
-        mac.update(player.as_bytes());
+    pub fn new(score: f32, player: Player, meta: Option<String>) -> Self {
+        let mut mac = Hmac::<Sha256>::new_from_slice(player.key.as_bytes()).unwrap();
+        mac.update(player.id.as_bytes());
         mac.update(&score.to_le_bytes());
         if let Some(meta) = meta.as_ref() {
             mac.update(meta.as_bytes());
@@ -46,7 +48,7 @@ impl ScoreInput {
         let hmac = dbg!(hex::encode(&mac.finalize().into_bytes()[..]));
         Self {
             score,
-            player,
+            player: player.id,
             meta,
             hmac,
         }
@@ -58,9 +60,13 @@ async fn save_score(
     score: web::Json<ScoreInput>,
     leaderboard: web::Path<Uuid>,
 ) -> impl Responder {
-    if score.verify_mac("hello") {
-        if Score::save(&score, &connection, &leaderboard).await {
-            HttpResponse::Ok().finish()
+    if let Some(player) = Player::get(score.player, &connection).await {
+        if score.verify_mac(player.key) {
+            if Score::save(&score, &connection, &leaderboard).await {
+                HttpResponse::Ok().finish()
+            } else {
+                HttpResponse::InternalServerError().finish()
+            }
         } else {
             HttpResponse::InternalServerError().finish()
         }
@@ -110,13 +116,6 @@ impl Score {
     }
 
     pub async fn save(score: &ScoreInput, connection: &PgPool, leaderboard: &Uuid) -> bool {
-        if sqlx::query!("SELECT id FROM players WHERE id = $1", score.player)
-            .fetch_one(connection)
-            .await
-            .is_err()
-        {
-            return false;
-        }
         if sqlx::query!("SELECT id FROM leaderboards WHERE id = $1", leaderboard)
             .fetch_one(connection)
             .await

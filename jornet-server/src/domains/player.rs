@@ -59,4 +59,21 @@ impl Player {
         .await
         .is_ok()
     }
+
+    pub async fn get(id: Uuid, connection: &PgPool) -> Option<Player> {
+        sqlx::query!(
+            r#"
+            SELECT id, name, key FROM players WHERE id = $1
+            "#,
+            id,
+        )
+        .fetch_one(connection)
+        .await
+        .map(|r| Player {
+            id: r.id,
+            name: r.name.clone(),
+            key: r.key,
+        })
+        .ok()
+    }
 }

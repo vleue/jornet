@@ -58,7 +58,7 @@ async fn save_score() {
 
     let response = client
         .post(&format!("{}/api/scores/{}", app.address, leaderboard.id))
-        .json(&ScoreInput::new(543.21, player.id, None, "hello"))
+        .json(&ScoreInput::new(543.21, player, None))
         .send()
         .await
         .expect("Failed to execute request.");
@@ -85,7 +85,7 @@ async fn save_score_to_missing_dashboard() {
 
     let response = client
         .post(&format!("{}/api/scores/{}", app.address, Uuid::new_v4()))
-        .json(&ScoreInput::new(543.21, player.id, None, "hello"))
+        .json(&ScoreInput::new(543.21, player, None))
         .send()
         .await
         .expect("Failed to execute request.");
@@ -153,6 +153,12 @@ async fn save_score_unknown_player() {
     let app = helper::spawn_app().await;
     let client = reqwest::Client::new();
 
+    let player = Player {
+        id: Uuid::new_v4(),
+        name: "hello".to_string(),
+        key: Uuid::new_v4(),
+    };
+
     let token = client
         .post(&format!("{}/oauth/by_uuid", app.address))
         .json(&UuidInput {
@@ -180,7 +186,61 @@ async fn save_score_unknown_player() {
 
     let response = client
         .post(&format!("{}/api/scores/{}", app.address, leaderboard.id))
-        .json(&ScoreInput::new(543.21, Uuid::new_v4(), None, "hello"))
+        .json(&ScoreInput::new(543.21, player, None))
+        .send()
+        .await
+        .expect("Failed to execute request.");
+
+    assert!(response.status().is_server_error());
+}
+
+#[tokio::test]
+async fn save_score_wrong_key() {
+    let app = helper::spawn_app().await;
+    let client = reqwest::Client::new();
+
+    let mut player = client
+        .post(&format!("{}/api/players", app.address))
+        .json(&PlayerInput {
+            name: "hello".to_string(),
+        })
+        .send()
+        .await
+        .expect("Failed to execute request.")
+        .json::<Player>()
+        .await
+        .unwrap();
+
+    player.key = Uuid::new_v4();
+
+    let token = client
+        .post(&format!("{}/oauth/by_uuid", app.address))
+        .json(&UuidInput {
+            uuid: Uuid::new_v4(),
+        })
+        .send()
+        .await
+        .expect("Failed to execute request.")
+        .json::<TokenReply>()
+        .await
+        .expect("got body");
+
+    let leaderboard = client
+        .post(&format!("{}/api/leaderboards", app.address))
+        .bearer_auth(token.token)
+        .json(&LeaderboardInput {
+            name: "my leaderboard".to_string(),
+        })
+        .send()
+        .await
+        .expect("Failed to execute request.")
+        .json::<Leaderboard>()
+        .await
+        .expect("valid leaderboard");
+
+    let response = client
+        .post(&format!("{}/api/scores/{}", app.address, leaderboard.id))
+        .json(&ScoreInput::new(543.21, player, None))
         .send()
         .await
         .expect("Failed to execute request.");
