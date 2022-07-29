@@ -38,7 +38,7 @@ enum GameState {
 
 fn setup(mut commands: Commands, mut leaderboard: ResMut<Leaderboard>) {
     commands.spawn_bundle(Camera2dBundle::default());
-    leaderboard.create_player("Paul");
+    leaderboard.create_player(None);
 }
 
 mod menu {
@@ -144,6 +144,36 @@ mod menu {
                         ));
                     });
             });
+        commands.spawn_bundle(
+            TextBundle::from_sections([
+                TextSection {
+                    value: "you are: ".to_string(),
+                    style: TextStyle {
+                        font: asset_server.load("FiraSans-Bold.ttf"),
+                        font_size: 20.0,
+                        color: Color::hex(TEXT).unwrap(),
+                    },
+                },
+                TextSection {
+                    value: leaderboard.get_player_name().unwrap_or_default(),
+                    style: TextStyle {
+                        font: asset_server.load("FiraSans-Bold.ttf"),
+                        font_size: 25.0,
+                        color: Color::hex(TEXT).unwrap(),
+                    },
+                },
+            ])
+            .with_style(Style {
+                position_type: PositionType::Absolute,
+                position: UiRect {
+                    left: Val::Px(10.0),
+                    bottom: Val::Px(10.0),
+                    ..default()
+                },
+                ..default()
+            }),
+        );
+
         leaderboard.refresh_leaderboard();
     }
 

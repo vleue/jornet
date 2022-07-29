@@ -27,12 +27,16 @@ impl Leaderboard {
         }
     }
 
-    pub fn create_player(&mut self, name: &str) {
+    pub fn get_player_name(&self) -> Option<String> {
+        self.player.read().unwrap().as_ref().map(|p| p.name.clone())
+    }
+
+    pub fn create_player(&mut self, name: Option<&str>) {
         let thread_pool = IoTaskPool::get();
         let host = self.host.clone();
 
         let player = PlayerInput {
-            name: name.to_string(),
+            name: name.map(|n| n.to_string()),
         };
         let complete_player = self.player.clone();
 
@@ -143,5 +147,5 @@ pub struct Player {
 
 #[derive(Serialize, Debug, Clone)]
 pub struct PlayerInput {
-    pub name: String,
+    pub name: Option<String>,
 }
