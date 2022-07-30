@@ -2,7 +2,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHeart } from "@fortawesome/free-solid-svg-icons";
 import { faGithub } from "@fortawesome/free-brands-svg-icons"
 import React, { Component } from "react";
-import { Button, Col, Container, Row } from "react-bootstrap";
+import { Button, Col, Container, Nav, Row, Tab, Tabs } from "react-bootstrap";
+import { LinkContainer } from "react-router-bootstrap";
+import Leaderboard from "./leaderboard";
 
 class Landing extends Component {
     render() {
@@ -55,19 +57,22 @@ class Landing extends Component {
                             </a>
                         </Col>
                     </Row>
+                    <Row><Col>&nbsp;</Col></Row>
                     <Row>
                         <Col>
-                            <a
-                                href="https://jornet.vleue.com/leaderboard/fb0bbe22-b047-494d-9519-1d36668fa5bc"
-                                target="_blank"
-                                rel="noreferrer"
+                            <Tabs
+                                defaultActiveKey="wasm-demo"
+                                id="landing-tabs"
+                                className="mb-3"
                             >
-                                View the example leaderboard
-                            </a>
+                                <Tab eventKey="wasm-demo" title="Bevy Demo">
+                                    <canvas id="demo-leaderboard"></canvas>
+                                </Tab>
+                                <Tab eventKey="view-leaderboard" title="View Leaderboard">
+                                    <Leaderboard leaderboardId="fb0bbe22-b047-494d-9519-1d36668fa5bc" />
+                                </Tab>
+                            </Tabs>
                         </Col>
-                    </Row>
-                    <Row>
-                        <Col><canvas id="demo-leaderboard"></canvas></Col>
                     </Row>
                 </Container>
 

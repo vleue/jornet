@@ -69,5 +69,9 @@ class LeaderboardInner extends Component<LeaderboardProps, LeaderboardState> {
 
 export default function Leaderboard(props: LeaderboardProps) {
     let params = useParams();
-    return <LeaderboardInner {...props} leaderboardId={params.leaderboardId} />;
+    if (props.leaderboardId === undefined) {
+        return <LeaderboardInner {...props} leaderboardId={params.leaderboardId} />;
+    } else {
+        return <LeaderboardInner {...props} />;
+    }
 };
