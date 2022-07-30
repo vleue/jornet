@@ -15,6 +15,13 @@ class BevyIntegration extends Component {
                 </div>
                 <hr />
                 <div>
+                    Add the dependency.
+                </div>
+                <SyntaxHighlighter language="toml">
+                    bevy_jornet = "0.1.0"
+                </SyntaxHighlighter>
+                <hr />
+                <div>
                     Add the plugin, specifying your settings.
                 </div>
                 <SyntaxHighlighter language="rust">
