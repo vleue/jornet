@@ -19,6 +19,7 @@ fn main() {
         .add_plugins(DefaultPlugins)
         .add_plugin(JornetPlugin::with_leaderboard(
             "fb0bbe22-b047-494d-9519-1d36668fa5bc",
+            "fb0bbe22-b047-494d-9519-1d36668fa5bc",
         ))
         .add_startup_system(setup)
         .add_state(GameState::Menu)
