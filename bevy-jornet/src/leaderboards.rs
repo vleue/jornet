@@ -13,7 +13,8 @@ pub struct Leaderboard {
     leaderboard: Vec<Score>,
     updating: Arc<RwLock<Vec<Score>>>,
     host: String,
-    player: Arc<RwLock<Option<Player>>>,
+    new_player: Arc<RwLock<Option<Player>>>,
+    player: Option<Player>,
 }
 
 impl Leaderboard {
@@ -23,12 +24,13 @@ impl Leaderboard {
             leaderboard: Default::default(),
             updating: Default::default(),
             host: "https://jornet.vleue.com".to_string(),
+            new_player: Default::default(),
             player: Default::default(),
         }
     }
 
     pub fn get_player_name(&self) -> Option<String> {
-        self.player.read().unwrap().as_ref().map(|p| p.name.clone())
+        self.player.as_ref().map(|p| p.name.clone())
     }
 
     pub fn create_player(&mut self, name: Option<&str>) {
@@ -38,7 +40,7 @@ impl Leaderboard {
         let player = PlayerInput {
             name: name.map(|n| n.to_string()),
         };
-        let complete_player = self.player.clone();
+        let complete_player = self.new_player.clone();
 
         thread_pool
             .spawn(async move {
@@ -54,8 +56,7 @@ impl Leaderboard {
         let key = self.key;
         let host = self.host.clone();
 
-        let score_to_send =
-            ScoreInput::new(score, self.player.read().unwrap().as_ref().unwrap(), None);
+        let score_to_send = ScoreInput::new(score, self.player.as_ref().unwrap(), None);
         thread_pool
             .spawn(async move {
                 http::post_and_forget(
@@ -90,7 +91,12 @@ impl Leaderboard {
 }
 
 pub fn done_refreshing_leaderboard(mut leaderboard: ResMut<Leaderboard>) {
-    if !leaderboard.updating.read().unwrap().is_empty() {
+    if !leaderboard
+        .updating
+        .try_read()
+        .map(|v| v.is_empty())
+        .unwrap_or(true)
+    {
         let mut updated = leaderboard
             .updating
             .write()
@@ -100,6 +106,15 @@ pub fn done_refreshing_leaderboard(mut leaderboard: ResMut<Leaderboard>) {
         updated.sort_unstable_by(|s1, s2| s2.score.partial_cmp(&s1.score).unwrap());
         updated.truncate(10);
         leaderboard.leaderboard = updated;
+    }
+    if leaderboard
+        .new_player
+        .try_read()
+        .map(|v| v.is_some())
+        .unwrap_or(false)
+    {
+        let new_player = leaderboard.new_player.write().unwrap().take();
+        leaderboard.player = new_player;
     }
 }
 
