@@ -4,6 +4,8 @@ on:
   push:
     tags:        
       - jornet-server-v**
+      - jornet-ui-v**
+      - bevy-jornet-v**
 
 jobs:
   Release:
