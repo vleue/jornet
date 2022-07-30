@@ -131,9 +131,9 @@ async fn save_score_wrong_hmac() {
         .post(&format!("{}/api/v1/scores/{}", app.address, leaderboard.id))
         .json(&ScoreInput {
             score: 543.21,
-            player: Uuid::new_v4(),
+            player: player.id,
             meta: None,
-            hmac: "".to_string(),
+            k: "".to_string(),
         })
         .send()
         .await

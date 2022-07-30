@@ -131,7 +131,7 @@ pub struct ScoreInput {
     pub score: f32,
     pub player: Uuid,
     pub meta: Option<String>,
-    pub hmac: String,
+    pub k: String,
 }
 
 impl ScoreInput {
@@ -148,7 +148,7 @@ impl ScoreInput {
             score,
             player: player.id,
             meta,
-            hmac,
+            k: hmac,
         }
     }
 }

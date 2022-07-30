@@ -22,7 +22,7 @@ pub struct ScoreInput {
     pub score: f32,
     pub player: Uuid,
     pub meta: Option<String>,
-    pub hmac: String,
+    pub k: String,
 }
 
 impl ScoreInput {
@@ -33,7 +33,7 @@ impl ScoreInput {
         if let Some(meta) = self.meta.as_ref() {
             mac.update(meta.as_bytes());
         }
-        mac.verify_slice(hex::decode(&self.hmac).unwrap().as_slice())
+        mac.verify_slice(hex::decode(&self.k).unwrap().as_slice())
             .is_ok()
     }
 
@@ -50,7 +50,7 @@ impl ScoreInput {
             score,
             player: player.id,
             meta,
-            hmac,
+            k: hmac,
         }
     }
 }
