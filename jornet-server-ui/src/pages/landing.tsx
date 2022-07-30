@@ -73,6 +73,18 @@ class BevyIntegration extends Component {
     }
 }
 
+class About extends Component {
+    render() {
+        return (
+            <div>
+                Jornet is made for game jams. This means it will always be free for game jams, and will stay available.<br />
+                Please consider sponsoring me if you intend to use it for something more than a game jam.<br />
+                Data older than 3 months may be deleted.
+            </div>
+        );
+    }
+}
+
 class Landing extends Component {
     render() {
         return (
@@ -140,6 +152,9 @@ class Landing extends Component {
                                 </Tab>
                                 <Tab eventKey="bevy-integration" title="Bevy Integration">
                                     <BevyIntegration />
+                                </Tab>
+                                <Tab eventKey="about" title="About">
+                                    <About />
                                 </Tab>
                             </Tabs>
                         </Col>
