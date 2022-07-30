@@ -29,7 +29,7 @@ class App extends Component<AppProps, AppState> {
     return (
       <div className="App" >
         <Router>
-          <Navbar bg="secondary" variant="dark">
+          <Navbar bg="info" variant="dark">
             <Container>
               <LinkContainer to="/">
                 <Navbar.Brand>
