@@ -11,14 +11,18 @@ class BevyIntegration extends Component {
         return (
             <div>
                 <div>
-                    Add the plugin, specifying your settings:
+                    View the full example on <a href="https://github.com/vleue/jornet/blob/main/bevy-jornet/examples/whac-a-square.rs" target="_blank" rel="noreferrer">GitHub</a>
+                </div>
+                <hr />
+                <div>
+                    Add the plugin, specifying your settings.
                 </div>
                 <SyntaxHighlighter language="rust">
                     {"app.add_plugin(JornetPlugin::with_leaderboard(\"0c2bec80-4bea-414b-ace1-6c1daafb8bfc\"));"}
                 </SyntaxHighlighter>
                 <hr />
                 <div>
-                    Create a player if you don't already have one
+                    Create a player if you don't already have one.
                 </div>
                 <SyntaxHighlighter language="rust">
                     {"fn leaderboard_setup(mut leaderboard: ResMut<Leaderboard>) {\n\
@@ -28,7 +32,7 @@ class BevyIntegration extends Component {
                 </SyntaxHighlighter>
                 <hr />
                 <div>
-                    Save a new score for the current user
+                    Save a new score for the current user.
                 </div>
                 <SyntaxHighlighter language="rust">
                     {"fn save_score(leaderboard: Res<Leaderboard>) {\n\
@@ -37,7 +41,7 @@ class BevyIntegration extends Component {
                 </SyntaxHighlighter>
                 <hr />
                 <div>
-                    Refresh the leaderboard. This is asynchrone.
+                    Refresh the leaderboard. This is asynchrone. The Leaderboard resource will be marked as changed once it has been refreshed.
                 </div>
                 <SyntaxHighlighter language="rust">
                     {"fn refresh_leaderboard(leaderboard: Res<Leaderboard>) {\n\
@@ -46,12 +50,14 @@ class BevyIntegration extends Component {
                 </SyntaxHighlighter>
                 <hr />
                 <div>
-                    Get the leaderboard, and display it how you want
+                    Get the leaderboard, and display it how you want.
                 </div>
                 <SyntaxHighlighter language="rust">
                     {"fn display_leaderboard(leaderboard: Res<Leaderboard>) {\n\
-    for score in leaderboard.get_leaderboard() {\n\
-        // display score\n\
+    if leaderboard.is_changed() {\n\
+        for score in leaderboard.get_leaderboard() {\n\
+            // display score\n\
+        }\n\
     }\n\
 }"}
                 </SyntaxHighlighter>
