@@ -2,11 +2,59 @@ import React, { Component } from "react";
 import { Alert, Button, Col, Container, FloatingLabel, Form, InputGroup, Nav, Row, Table } from "react-bootstrap";
 import { NavigateFunction, useNavigate, useSearchParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faClipboard } from '@fortawesome/free-solid-svg-icons'
+import { faClipboard, faClipboardCheck } from '@fortawesome/free-solid-svg-icons'
 import { LinkContainer } from "react-router-bootstrap";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import { CSSProperties } from "react";
 
+
+type ClipboardHelperProps = {
+    to_copy: string,
+    style?: CSSProperties,
+}
+
+type ClipboardHelperState = {
+    clicked: boolean,
+}
+
+class ClipboardHelper extends Component<ClipboardHelperProps, ClipboardHelperState> {
+    state: ClipboardHelperState = {
+        clicked: false
+    };
+    render() {
+        if (this.state.clicked) {
+            setTimeout(() => { this.setState({ clicked: false }) }, 2000);
+            return (<FontAwesomeIcon
+                icon={faClipboardCheck}
+                onClick={() => {
+                    navigator.clipboard.writeText(this.props.to_copy);
+                    this.setState({ clicked: true })
+                }}
+                style={{
+                    marginLeft: "0.5rem",
+                    fontSize: "1.1rem",
+                    color: "green",
+                    ...this.props.style
+                }}
+            />
+            );
+        } else {
+            return (<FontAwesomeIcon
+                icon={faClipboard}
+                onClick={() => {
+                    navigator.clipboard.writeText(this.props.to_copy);
+                    this.setState({ clicked: true })
+                }}
+                style={{
+                    marginLeft: "0.5rem",
+                    ...this.props.style
+                }}
+            />
+            );
+        }
+    }
+}
 
 type User = {
     uuid: string,
@@ -141,7 +189,7 @@ class DashboardInner extends Component<DashboardProps, DashboardState> {
                                     <div>You'll need to keep your new leaderboard key to use it: </div>
                                     <div>&nbsp;</div>
                                     <div className="font-monospace">{this.state.new_leaderboard_data.key}</div>
-                                    <FontAwesomeIcon icon={faClipboard} onClick={() => { navigator.clipboard.writeText(this.state.new_leaderboard_data?.key!) }} style={{ marginLeft: "0.5rem" }} />
+                                    <ClipboardHelper to_copy={this.state.new_leaderboard_data?.key!} />
                                 </div>
                                 <div>
                                     <div>Here is the code to setup your new leaderboard in Bevy: </div>
@@ -149,7 +197,10 @@ class DashboardInner extends Component<DashboardProps, DashboardState> {
                                         <SyntaxHighlighter language="rust" style={docco} customStyle={{ marginBottom: "0px" }}>
                                             {"app.add_plugin(JornetPlugin::with_leaderboard(\"" + this.state.new_leaderboard_data.id + "\", \"" + this.state.new_leaderboard_data.key! + "\"));"}
                                         </SyntaxHighlighter>
-                                        <FontAwesomeIcon icon={faClipboard} onClick={() => { navigator.clipboard.writeText("app.add_plugin(JornetPlugin::with_leaderboard(\"" + this.state.new_leaderboard_data?.id! + "\", \"" + this.state.new_leaderboard_data?.key! + "\"));") }} style={{ margin: "0.5rem" }} />
+                                        <ClipboardHelper
+                                            to_copy={"app.add_plugin(JornetPlugin::with_leaderboard(\"" + this.state.new_leaderboard_data?.id! + "\", \"" + this.state.new_leaderboard_data?.key! + "\"));"}
+                                            style={{ marginTop: "0.5rem" }}
+                                        />
                                     </div>
                                     <div>You should avoid exposing those ID/key in a public repository.</div>
                                 </div>
@@ -180,7 +231,7 @@ class DashboardInner extends Component<DashboardProps, DashboardState> {
                                             <td>{leaderboard.scores}</td>
                                             <td style={{ display: "flex" }}>
                                                 <p className="font-monospace">{leaderboard.id}</p>
-                                                <FontAwesomeIcon icon={faClipboard} onClick={() => { navigator.clipboard.writeText(leaderboard.id) }} style={{ marginLeft: "0.5rem" }} />
+                                                <ClipboardHelper to_copy={leaderboard.id} />
                                             </td>
                                         </tr>
                                     })
