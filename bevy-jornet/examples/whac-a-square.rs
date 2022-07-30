@@ -18,8 +18,8 @@ fn main() {
         .insert_resource(ClearColor(Color::hex(CLEAR).unwrap()))
         .add_plugins(DefaultPlugins)
         .add_plugin(JornetPlugin::with_leaderboard(
-            "fb0bbe22-b047-494d-9519-1d36668fa5bc",
-            "fb0bbe22-b047-494d-9519-1d36668fa5bc",
+            option_env!("JORNET_LEADERBOARD_ID").unwrap_or("a920de64-3bdb-4f8e-87a8-e7bf20f00f81"),
+            option_env!("JORNET_LEADERBOARD_KEY").unwrap_or("a797039b-a91d-43e6-8e1c-94f9ca0aa1d6"),
         ))
         .add_startup_system(setup)
         .add_state(GameState::Menu)
