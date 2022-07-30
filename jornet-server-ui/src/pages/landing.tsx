@@ -5,6 +5,7 @@ import React, { Component } from "react";
 import { Button, Col, Container, Row, Tab, Tabs } from "react-bootstrap";
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import Leaderboard from "./leaderboard";
+import { atomOneDarkReasonable } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 class BevyIntegration extends Component {
     render() {
@@ -17,21 +18,21 @@ class BevyIntegration extends Component {
                 <div>
                     Add the dependency.
                 </div>
-                <SyntaxHighlighter language="toml">
+                <SyntaxHighlighter language="toml" style={atomOneDarkReasonable}>
                     bevy_jornet = "0.1.0"
                 </SyntaxHighlighter>
                 <hr />
                 <div>
                     Add the plugin, specifying your settings.
                 </div>
-                <SyntaxHighlighter language="rust">
-                    {"app.add_plugin(JornetPlugin::with_leaderboard(\"0c2bec80-4bea-414b-ace1-6c1daafb8bfc\"));"}
+                <SyntaxHighlighter language="rust" style={atomOneDarkReasonable}>
+                    {"app.add_plugin(JornetPlugin::with_leaderboard(id, key));"}
                 </SyntaxHighlighter>
                 <hr />
                 <div>
                     Create a player if you don't already have one.
                 </div>
-                <SyntaxHighlighter language="rust">
+                <SyntaxHighlighter language="rust" style={atomOneDarkReasonable}>
                     {"fn leaderboard_setup(mut leaderboard: ResMut<Leaderboard>) {\n\
     // `None` will create a new user with a random name\n\
     leaderboard.create_player(None);\n\
@@ -41,7 +42,7 @@ class BevyIntegration extends Component {
                 <div>
                     Save a new score for the current user.
                 </div>
-                <SyntaxHighlighter language="rust">
+                <SyntaxHighlighter language="rust" style={atomOneDarkReasonable}>
                     {"fn save_score(leaderboard: Res<Leaderboard>) {\n\
     leaderboard.send_score(10.0);\n\
 }"}
@@ -50,7 +51,7 @@ class BevyIntegration extends Component {
                 <div>
                     Refresh the leaderboard. This is asynchrone. The Leaderboard resource will be marked as changed once it has been refreshed.
                 </div>
-                <SyntaxHighlighter language="rust">
+                <SyntaxHighlighter language="rust" style={atomOneDarkReasonable}>
                     {"fn refresh_leaderboard(leaderboard: Res<Leaderboard>) {\n\
     leaderboard.refresh_leaderboard();\n\
 }"}
@@ -59,7 +60,7 @@ class BevyIntegration extends Component {
                 <div>
                     Get the leaderboard, and display it how you want.
                 </div>
-                <SyntaxHighlighter language="rust">
+                <SyntaxHighlighter language="rust" style={atomOneDarkReasonable}>
                     {"fn display_leaderboard(leaderboard: Res<Leaderboard>) {\n\
     if leaderboard.is_changed() {\n\
         for score in leaderboard.get_leaderboard() {\n\
