@@ -149,7 +149,7 @@ class Landing extends Component {
                                     <canvas id="demo-leaderboard"></canvas>
                                 </Tab>
                                 <Tab eventKey="view-leaderboard" title="View Leaderboard">
-                                    <Leaderboard leaderboardId="fb0bbe22-b047-494d-9519-1d36668fa5bc" />
+                                    <Leaderboard leaderboardId="edd47bbb-5d64-4a2b-84f5-b1fe9f31ec4c" />
                                 </Tab>
                                 <Tab eventKey="bevy-integration" title="Bevy Integration">
                                     <BevyIntegration />
