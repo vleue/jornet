@@ -17,6 +17,7 @@ pub struct LeaderboardInput {
 #[derive(Deserialize, Serialize)]
 pub struct Leaderboard {
     pub id: Uuid,
+    pub key: Uuid,
     pub name: String,
 }
 
@@ -35,6 +36,7 @@ async fn new_leaderboard(
     let leaderboard = Leaderboard {
         name: leaderboard.name.clone(),
         id: Uuid::new_v4(),
+        key: Uuid::new_v4(),
     };
     if leaderboard.create(&connection, account.id).await {
         HttpResponse::Ok().json(leaderboard)
@@ -76,14 +78,23 @@ impl Leaderboard {
         .collect()
     }
 
+    pub async fn get_key(connection: &PgPool, id: Uuid) -> Option<Uuid> {
+        sqlx::query!("SELECT key FROM leaderboards WHERE id = $1;", id)
+            .fetch_one(connection)
+            .await
+            .map(|r| r.key)
+            .ok()
+    }
+
     pub async fn create(&self, connection: &PgPool, owner: Uuid) -> bool {
         sqlx::query!(
             r#"
-            INSERT INTO leaderboards (id, name, owner) VALUES ($1, $2, $3)
+            INSERT INTO leaderboards (id, name, owner, key) VALUES ($1, $2, $3, $4)
             "#,
             self.id,
             self.name,
             owner,
+            self.key,
         )
         .execute(connection)
         .await

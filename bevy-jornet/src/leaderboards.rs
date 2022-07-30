@@ -9,6 +9,7 @@ use uuid::Uuid;
 use crate::http;
 
 pub struct Leaderboard {
+    id: Uuid,
     key: Uuid,
     leaderboard: Vec<Score>,
     updating: Arc<RwLock<Vec<Score>>>,
@@ -18,8 +19,9 @@ pub struct Leaderboard {
 }
 
 impl Leaderboard {
-    pub(crate) fn with_leaderboard(key: Uuid) -> Self {
+    pub(crate) fn with_leaderboard(id: Uuid, key: Uuid) -> Self {
         Self {
+            id,
             key,
             leaderboard: Default::default(),
             updating: Default::default(),
@@ -53,14 +55,14 @@ impl Leaderboard {
 
     pub fn send_score(&self, score: f32) -> Option<()> {
         let thread_pool = IoTaskPool::get();
-        let key = self.key;
+        let leaderboard_id = self.id;
         let host = self.host.clone();
 
-        let score_to_send = ScoreInput::new(score, self.player.as_ref().unwrap(), None);
+        let score_to_send = ScoreInput::new(self.key, score, self.player.as_ref().unwrap(), None);
         thread_pool
             .spawn(async move {
                 http::post_and_forget(
-                    &format!("{}/api/v1/scores/{}", host, key),
+                    &format!("{}/api/v1/scores/{}", host, leaderboard_id),
                     &Some(score_to_send),
                 )
                 .await;
@@ -72,14 +74,14 @@ impl Leaderboard {
 
     pub fn refresh_leaderboard(&self) {
         let thread_pool = IoTaskPool::get();
-        let key = self.key;
+        let leaderboard_id = self.id;
         let host = self.host.clone();
 
         let leaderboard_to_update = self.updating.clone();
 
         thread_pool
             .spawn(async move {
-                let scores = http::get(&format!("{}/api/v1/scores/{}", host, key)).await;
+                let scores = http::get(&format!("{}/api/v1/scores/{}", host, leaderboard_id)).await;
                 *leaderboard_to_update.write().unwrap() = scores;
             })
             .detach();
@@ -135,8 +137,9 @@ pub struct ScoreInput {
 }
 
 impl ScoreInput {
-    pub fn new(score: f32, player: &Player, meta: Option<String>) -> Self {
+    pub fn new(leaderboard_key: Uuid, score: f32, player: &Player, meta: Option<String>) -> Self {
         let mut mac = Hmac::<Sha256>::new_from_slice(player.key.as_bytes()).unwrap();
+        mac.update(leaderboard_key.as_bytes());
         mac.update(player.id.as_bytes());
         mac.update(&score.to_le_bytes());
         if let Some(meta) = meta.as_ref() {

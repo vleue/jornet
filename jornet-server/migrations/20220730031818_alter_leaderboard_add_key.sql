@@ -1,0 +1,2 @@
+ALTER TABLE leaderboards
+ADD key UUID NOT NULL;

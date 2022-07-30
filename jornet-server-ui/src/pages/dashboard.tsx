@@ -26,6 +26,7 @@ type DashboardState = {
     user?: User;
     new_leaderboard: string;
     leaderboards: Leaderboard[]
+    new_leaderboard_key?: string;
 };
 
 
@@ -129,6 +130,19 @@ class DashboardInner extends Component<DashboardProps, DashboardState> {
                         &nbsp;
                     </Col>
                 </Row>
+                {this.state.new_leaderboard_key !== undefined ? (
+                    <Row>
+                        <Col>
+                            <Alert key="new_leaderboard" variant="warning" style={{ display: "flex" }}>
+                                <div>You'll need to keep your new leaderboard key to use it: </div>
+                                <div>&nbsp;</div>
+                                <div className="font-monospace">{this.state.new_leaderboard_key}</div>
+                                <FontAwesomeIcon icon={faClipboard} onClick={() => { navigator.clipboard.writeText(this.state.new_leaderboard_key!) }} style={{ marginLeft: "0.5rem" }} />
+                            </Alert>
+                        </Col>
+                    </Row>
+                ) : (<></>)
+                }
                 <Row>
                     <Col>
                         <Table striped bordered hover>
@@ -182,6 +196,7 @@ class DashboardInner extends Component<DashboardProps, DashboardState> {
                 var leaderboards = this.state.leaderboards;
                 leaderboards.push(data)
                 this.setState({ leaderboards: leaderboards });
+                this.setState({ new_leaderboard_key: data.key });
             }).catch(error => {
                 this.props.setLoginInfo(undefined);
                 this.props.setToken(undefined);

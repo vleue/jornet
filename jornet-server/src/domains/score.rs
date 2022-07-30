@@ -7,7 +7,7 @@ use sqlx::PgPool;
 use time::{format_description::well_known::Rfc3339, UtcOffset};
 use uuid::Uuid;
 
-use super::player::Player;
+use super::{leaderboard::Leaderboard, player::Player};
 
 #[derive(Serialize)]
 struct Score {
@@ -26,8 +26,9 @@ pub struct ScoreInput {
 }
 
 impl ScoreInput {
-    pub fn verify_mac(&self, key: Uuid) -> bool {
+    pub fn verify_mac(&self, key: Uuid, leaderboard_key: Uuid) -> bool {
         let mut mac = Hmac::<Sha256>::new_from_slice(key.as_bytes()).unwrap();
+        mac.update(leaderboard_key.as_bytes());
         mac.update(self.player.as_bytes());
         mac.update(&self.score.to_le_bytes());
         if let Some(meta) = self.meta.as_ref() {
@@ -37,8 +38,9 @@ impl ScoreInput {
             .is_ok()
     }
 
-    pub fn new(score: f32, player: Player, meta: Option<String>) -> Self {
+    pub fn new(score: f32, player: Player, meta: Option<String>, leaderboard_key: Uuid) -> Self {
         let mut mac = Hmac::<Sha256>::new_from_slice(player.key.as_bytes()).unwrap();
+        mac.update(leaderboard_key.as_bytes());
         mac.update(player.id.as_bytes());
         mac.update(&score.to_le_bytes());
         if let Some(meta) = meta.as_ref() {
@@ -61,8 +63,14 @@ async fn save_score(
     leaderboard: web::Path<Uuid>,
 ) -> impl Responder {
     if let Some(player) = Player::get(score.player, &connection).await {
-        if score.verify_mac(player.key) && Score::save(&score, &connection, &leaderboard).await {
-            HttpResponse::Ok().finish()
+        if let Some(leaderboard_key) = Leaderboard::get_key(&connection, *leaderboard).await {
+            if score.verify_mac(player.key, leaderboard_key)
+                && Score::save(&score, &connection, &leaderboard).await
+            {
+                HttpResponse::Ok().finish()
+            } else {
+                HttpResponse::InternalServerError().finish()
+            }
         } else {
             HttpResponse::InternalServerError().finish()
         }
