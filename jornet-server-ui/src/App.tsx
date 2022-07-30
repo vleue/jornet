@@ -36,7 +36,7 @@ class App extends Component<AppProps, AppState> {
                   <h1>
                     <img
                       alt=""
-                      src="logo-50.png"
+                      src="/logo-50.png"
                       width="50"
                       height="50"
                       className="d-inline-block align-top"

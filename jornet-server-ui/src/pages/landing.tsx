@@ -21,7 +21,7 @@ class Landing extends Component {
                         <Col xs={2}>
                             <img
                                 alt="logo"
-                                src="logo-1400.png"
+                                src="/logo-1400.png"
                                 width="130"
                                 height="130"
                                 className="d-inline-block align-top"
