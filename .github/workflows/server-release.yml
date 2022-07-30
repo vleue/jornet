@@ -35,6 +35,9 @@ jobs:
           cp -r bevy-jornet/assets jornet-server-ui/public/
           cp wasm/demo_leaderboard_bg-opt.wasm jornet-server-ui/public/demo_leaderboard_bg.wasm
           cp wasm/demo_leaderboard.js jornet-server-ui/public/
+        env:
+          JORNET_LEADERBOARD_ID: ${{ secrets.JORNET_LEADERBOARD_ID }}
+          JORNET_LEADERBOARD_KEY: ${{ secrets.JORNET_LEADERBOARD_KEY }}
 
       - name: remove Bevy plugin
         run: |
