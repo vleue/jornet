@@ -1,5 +1,8 @@
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faHeart } from "@fortawesome/free-solid-svg-icons";
+import { faGithub } from "@fortawesome/free-brands-svg-icons"
 import React, { Component } from "react";
-import { Col, Container, Row } from "react-bootstrap";
+import { Button, Col, Container, Row } from "react-bootstrap";
 
 class Landing extends Component {
     render() {
@@ -25,8 +28,33 @@ class Landing extends Component {
                             />
                         </Col>
                     </Row>
+                    <Row><Col>&nbsp;</Col></Row>
                     <Row>
-                        <Col>&nbsp;</Col>
+                        <Col className="text-center" xs={{ span: 2, offset: 4 }}>
+                            <a
+                                href="https://github.com/sponsors/mockersf"
+                                target="_blank"
+                                rel="noreferrer"
+                            >
+                                <Button variant="success">
+                                    <FontAwesomeIcon icon={faHeart} color="red" />{' '}
+                                    Sponsor Me
+                                </Button>
+                            </a>
+                        </Col>
+                        <Col className="text-center" xs={{ span: 2 }}>
+                            <a
+                                href="https://github.com/vleue/jornet"
+                                target="_blank"
+                                rel="noreferrer"
+                            >
+                                <Button variant="primary">
+                                    {/* <FontAwesomeIcon icon={["fab", "github-alt"]} /> */}
+                                    <FontAwesomeIcon icon={faGithub} />{' '}
+                                    View on GitHub
+                                </Button>
+                            </a>
+                        </Col>
                     </Row>
                     <Row>
                         <Col>
