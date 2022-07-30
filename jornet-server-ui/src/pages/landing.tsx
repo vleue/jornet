@@ -137,11 +137,17 @@ class Landing extends Component {
         );
     }
     componentDidMount() {
-        const script = document.createElement('script');
-        script.type = "module";
-        script.textContent = "import init from './demo_leaderboard.js'; init();";
-        document.body.appendChild(script);
+        if (document.getElementById("loading-wasm") === null) {
+            const script = document.createElement('script');
+            script.type = "module";
+            script.id = "loading-wasm";
+            script.textContent = "import init from './demo_leaderboard.js'; init();";
+            document.body.appendChild(script);
+        }
     };
+    componentWillUnmount() {
+        document.getElementById("loading-wasm")?.remove();
+    }
 }
 
 export default Landing;
