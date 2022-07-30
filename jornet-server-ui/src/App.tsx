@@ -29,11 +29,20 @@ class App extends Component<AppProps, AppState> {
     return (
       <div className="App" >
         <Router>
-          <Navbar bg="dark" variant="dark">
+          <Navbar bg="secondary" variant="dark">
             <Container>
               <LinkContainer to="/">
                 <Navbar.Brand>
-                  <h2>Jornet</h2>
+                  <h1>
+                    <img
+                      alt=""
+                      src="logo-50.png"
+                      width="50"
+                      height="50"
+                      className="d-inline-block align-top"
+                    />{' '}
+                    Jornet
+                  </h1>
                 </Navbar.Brand>
               </LinkContainer>
               <Navbar.Toggle />
@@ -41,10 +50,10 @@ class App extends Component<AppProps, AppState> {
                 <Navbar.Text>
                   {this.state.login_info === undefined ? (
                     <LinkContainer to="/connect">
-                      <Nav.Link><small>Connect...</small></Nav.Link>
+                      <Nav.Link>Connect...</Nav.Link>
                     </LinkContainer>) : (
                     <LinkContainer to="/dashboard">
-                      <Nav.Link><small>connected as {this.state.login_info}</small></Nav.Link>
+                      <Nav.Link>connected as {this.state.login_info}</Nav.Link>
                     </LinkContainer>
                   )}
                 </Navbar.Text>

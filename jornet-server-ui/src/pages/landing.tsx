@@ -10,13 +10,20 @@ class Landing extends Component {
                         <Col>&nbsp;</Col>
                     </Row>
                     <Row>
-                        <Col></Col>
-                        <Col xs={10}>
-                            <big>
+                        <Col xs={{ span: 7, offset: 2 }}>
+                            <h1 className="display-4 text-center">
                                 Jornet is the social game server made for game jams!
-                            </big>
+                            </h1>
                         </Col>
-                        <Col></Col>
+                        <Col xs={2}>
+                            <img
+                                alt="logo"
+                                src="logo-1400.png"
+                                width="130"
+                                height="130"
+                                className="d-inline-block align-top"
+                            />
+                        </Col>
                     </Row>
                     <Row>
                         <Col>&nbsp;</Col>
