@@ -4,6 +4,8 @@ import { NavigateFunction, useNavigate, useSearchParams } from "react-router-dom
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClipboard } from '@fortawesome/free-solid-svg-icons'
 import { LinkContainer } from "react-router-bootstrap";
+import SyntaxHighlighter from "react-syntax-highlighter";
+import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 
 type User = {
@@ -14,6 +16,7 @@ type Leaderboard = {
     name: string,
     id: string,
     scores: number,
+    key?: string,
 }
 type DashboardProps = {
     token?: string;
@@ -26,7 +29,7 @@ type DashboardState = {
     user?: User;
     new_leaderboard: string;
     leaderboards: Leaderboard[]
-    new_leaderboard_key?: string;
+    new_leaderboard_data?: Leaderboard;
 };
 
 
@@ -91,10 +94,10 @@ class DashboardInner extends Component<DashboardProps, DashboardState> {
                     <Row>
                         <Col>
                             <Alert key="new_account" variant="warning" style={{ display: "flex" }}>
-                                <div>You'll need to keep your account UUID to reconnect with it: </div>
+                                <div>You'll need to keep your account UUID to manage your dashboards: </div>
                                 <div>&nbsp;</div>
                                 <div className="font-monospace">{this.state.user.uuid}</div>
-                                <FontAwesomeIcon icon={faClipboard} onClick={() => { navigator.clipboard.writeText(this.state.user!.uuid) }} style={{ marginLeft: "0.5rem" }} />
+                                <ClipboardHelper to_copy={this.state.user!.uuid} />
                             </Alert>
                         </Col>
                     </Row>
@@ -130,14 +133,26 @@ class DashboardInner extends Component<DashboardProps, DashboardState> {
                         &nbsp;
                     </Col>
                 </Row>
-                {this.state.new_leaderboard_key !== undefined ? (
+                {this.state.new_leaderboard_data !== undefined ? (
                     <Row>
                         <Col>
-                            <Alert key="new_leaderboard" variant="warning" style={{ display: "flex" }}>
-                                <div>You'll need to keep your new leaderboard key to use it: </div>
-                                <div>&nbsp;</div>
-                                <div className="font-monospace">{this.state.new_leaderboard_key}</div>
-                                <FontAwesomeIcon icon={faClipboard} onClick={() => { navigator.clipboard.writeText(this.state.new_leaderboard_key!) }} style={{ marginLeft: "0.5rem" }} />
+                            <Alert key="new_leaderboard" variant="warning">
+                                <div style={{ display: "flex" }}>
+                                    <div>You'll need to keep your new leaderboard key to use it: </div>
+                                    <div>&nbsp;</div>
+                                    <div className="font-monospace">{this.state.new_leaderboard_data.key}</div>
+                                    <FontAwesomeIcon icon={faClipboard} onClick={() => { navigator.clipboard.writeText(this.state.new_leaderboard_data?.key!) }} style={{ marginLeft: "0.5rem" }} />
+                                </div>
+                                <div>
+                                    <div>Here is the code to setup your new leaderboard in Bevy: </div>
+                                    <div style={{ display: "flex" }}>
+                                        <SyntaxHighlighter language="rust" style={docco} customStyle={{ marginBottom: "0px" }}>
+                                            {"app.add_plugin(JornetPlugin::with_leaderboard(\"" + this.state.new_leaderboard_data.id + "\", \"" + this.state.new_leaderboard_data.key! + "\"));"}
+                                        </SyntaxHighlighter>
+                                        <FontAwesomeIcon icon={faClipboard} onClick={() => { navigator.clipboard.writeText("app.add_plugin(JornetPlugin::with_leaderboard(\"" + this.state.new_leaderboard_data?.id! + "\", \"" + this.state.new_leaderboard_data?.key! + "\"));") }} style={{ margin: "0.5rem" }} />
+                                    </div>
+                                    <div>You should avoid exposing those ID/key in a public repository.</div>
+                                </div>
                             </Alert>
                         </Col>
                     </Row>
@@ -196,7 +211,7 @@ class DashboardInner extends Component<DashboardProps, DashboardState> {
                 var leaderboards = this.state.leaderboards;
                 leaderboards.push(data)
                 this.setState({ leaderboards: leaderboards });
-                this.setState({ new_leaderboard_key: data.key });
+                this.setState({ new_leaderboard_data: data });
             }).catch(error => {
                 this.props.setLoginInfo(undefined);
                 this.props.setToken(undefined);
