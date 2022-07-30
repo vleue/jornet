@@ -1,3 +1,5 @@
+use std::time::{SystemTime, UNIX_EPOCH};
+
 use actix_cors::Cors;
 use actix_web::{dev::HttpServiceFactory, web, HttpResponse, Responder};
 use hmac::{Hmac, Mac};
@@ -22,12 +24,14 @@ pub struct ScoreInput {
     pub score: f32,
     pub player: Uuid,
     pub meta: Option<String>,
+    pub timestamp: u64,
     pub k: String,
 }
 
 impl ScoreInput {
     pub fn verify_mac(&self, key: Uuid, leaderboard_key: Uuid) -> bool {
         let mut mac = Hmac::<Sha256>::new_from_slice(key.as_bytes()).unwrap();
+        mac.update(&self.timestamp.to_le_bytes());
         mac.update(leaderboard_key.as_bytes());
         mac.update(self.player.as_bytes());
         mac.update(&self.score.to_le_bytes());
@@ -39,7 +43,13 @@ impl ScoreInput {
     }
 
     pub fn new(score: f32, player: Player, meta: Option<String>, leaderboard_key: Uuid) -> Self {
+        let timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("Time went backwards")
+            .as_secs();
+
         let mut mac = Hmac::<Sha256>::new_from_slice(player.key.as_bytes()).unwrap();
+        mac.update(&timestamp.to_le_bytes());
         mac.update(leaderboard_key.as_bytes());
         mac.update(player.id.as_bytes());
         mac.update(&score.to_le_bytes());
@@ -52,6 +62,7 @@ impl ScoreInput {
             score,
             player: player.id,
             meta,
+            timestamp,
             k: hmac,
         }
     }
@@ -127,15 +138,31 @@ impl Score {
         {
             return false;
         }
+
+        if sqlx::query!(
+            "SELECT id FROM scores WHERE leaderboard = $1 AND player = $2 AND score = $3 AND timestamp = TO_TIMESTAMP($4)",
+            leaderboard,
+            score.player,
+            score.score,
+            score.timestamp as f64
+        )
+            .fetch_one(connection)
+            .await
+            .is_ok()
+        {
+            return false;
+        }
+
         sqlx::query!(
                 r#"
-            INSERT INTO scores (id, leaderboard, score, player, timestamp, meta) VALUES ($1, $2, $3, $4, NOW(), $5)
+            INSERT INTO scores (id, leaderboard, score, player, meta, timestamp) VALUES ($1, $2, $3, $4, $5, TO_TIMESTAMP($6))
             "#,
                 Uuid::new_v4(),
                 leaderboard,
                 score.score,
                 score.player,
                 score.meta,
+                score.timestamp as f64
             )
             .execute(connection)
             .await

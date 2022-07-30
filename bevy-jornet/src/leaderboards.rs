@@ -1,4 +1,7 @@
-use std::sync::{Arc, RwLock};
+use std::{
+    sync::{Arc, RwLock},
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 use bevy::{prelude::ResMut, tasks::IoTaskPool};
 use hmac::{Hmac, Mac};
@@ -133,12 +136,19 @@ pub struct ScoreInput {
     pub score: f32,
     pub player: Uuid,
     pub meta: Option<String>,
+    pub timestamp: u64,
     pub k: String,
 }
 
 impl ScoreInput {
     pub fn new(leaderboard_key: Uuid, score: f32, player: &Player, meta: Option<String>) -> Self {
+        let timestamp = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("Time went backwards")
+            .as_secs();
+
         let mut mac = Hmac::<Sha256>::new_from_slice(player.key.as_bytes()).unwrap();
+        mac.update(&timestamp.to_le_bytes());
         mac.update(leaderboard_key.as_bytes());
         mac.update(player.id.as_bytes());
         mac.update(&score.to_le_bytes());
@@ -151,6 +161,7 @@ impl ScoreInput {
             score,
             player: player.id,
             meta,
+            timestamp,
             k: hmac,
         }
     }

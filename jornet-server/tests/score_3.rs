@@ -15,7 +15,7 @@ struct UuidInput {
 }
 
 #[tokio::test]
-async fn save_score() {
+async fn save_score_wrong_timestamp() {
     let app = helper::spawn_app().await;
     let client = reqwest::Client::new();
 
@@ -54,34 +54,11 @@ async fn save_score() {
         .await
         .expect("valid leaderboard");
 
+    let mut score = ScoreInput::new(543.21, player, None, leaderboard.key);
+    score.timestamp = 5120;
     let response = client
         .post(&format!("{}/api/v1/scores/{}", app.address, leaderboard.id))
-        .json(&ScoreInput::new(543.21, player, None, leaderboard.key))
-        .send()
-        .await
-        .expect("Failed to execute request.");
-
-    assert!(response.status().is_success());
-}
-
-#[tokio::test]
-async fn save_score_to_missing_dashboard() {
-    let app = helper::spawn_app().await;
-    let client = reqwest::Client::new();
-
-    let player = client
-        .post(&format!("{}/api/v1/players", app.address))
-        .json(&PlayerInput { name: None })
-        .send()
-        .await
-        .expect("Failed to execute request.")
-        .json::<Player>()
-        .await
-        .unwrap();
-
-    let response = client
-        .post(&format!("{}/api/v1/scores/{}", app.address, Uuid::new_v4()))
-        .json(&ScoreInput::new(543.21, player, None, Uuid::new_v4()))
+        .json(&score)
         .send()
         .await
         .expect("Failed to execute request.");
@@ -90,7 +67,7 @@ async fn save_score_to_missing_dashboard() {
 }
 
 #[tokio::test]
-async fn save_score_wrong_hmac() {
+async fn save_score_repeat_score() {
     let app = helper::spawn_app().await;
     let client = reqwest::Client::new();
 
@@ -106,7 +83,9 @@ async fn save_score_wrong_hmac() {
 
     let token = client
         .post(&format!("{}/oauth/by_uuid", app.address))
-        .json(&UuidInput { uuid: player.id })
+        .json(&UuidInput {
+            uuid: Uuid::new_v4(),
+        })
         .send()
         .await
         .expect("Failed to execute request.")
@@ -127,15 +106,20 @@ async fn save_score_wrong_hmac() {
         .await
         .expect("valid leaderboard");
 
-    let mut score = ScoreInput::new(543.21, player, None, leaderboard.key);
-    score.k = "a5c825056477825c755cac22aff7c4ab".to_string();
-
-    let response = client
+    let score = ScoreInput::new(543.21, player, None, leaderboard.key);
+    let response1 = client
+        .post(&format!("{}/api/v1/scores/{}", app.address, leaderboard.id))
+        .json(&score)
+        .send()
+        .await
+        .expect("Failed to execute request.");
+    let response2 = client
         .post(&format!("{}/api/v1/scores/{}", app.address, leaderboard.id))
         .json(&score)
         .send()
         .await
         .expect("Failed to execute request.");
 
-    assert!(response.status().is_server_error());
+    assert!(response1.status().is_success());
+    assert!(response2.status().is_server_error());
 }
