@@ -49,7 +49,6 @@ class Landing extends Component {
                                 rel="noreferrer"
                             >
                                 <Button variant="primary">
-                                    {/* <FontAwesomeIcon icon={["fab", "github-alt"]} /> */}
                                     <FontAwesomeIcon icon={faGithub} />{' '}
                                     View on GitHub
                                 </Button>
