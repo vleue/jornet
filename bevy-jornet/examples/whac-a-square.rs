@@ -6,7 +6,6 @@ const SQUARE: &str = "219ebc";
 
 use bevy::{prelude::*, time::Stopwatch};
 use bevy_jornet::{JornetPlugin, Leaderboard};
-use uuid::Uuid;
 
 fn main() {
     App::new()
@@ -19,7 +18,7 @@ fn main() {
         .insert_resource(ClearColor(Color::hex(CLEAR).unwrap()))
         .add_plugins(DefaultPlugins)
         .add_plugin(JornetPlugin::with_leaderboard(
-            Uuid::parse_str("fb0bbe22-b047-494d-9519-1d36668fa5bc").unwrap(),
+            "fb0bbe22-b047-494d-9519-1d36668fa5bc",
         ))
         .add_startup_system(setup)
         .add_state(GameState::Menu)

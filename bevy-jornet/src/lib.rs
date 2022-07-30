@@ -10,8 +10,10 @@ pub struct JornetPlugin {
 }
 
 impl JornetPlugin {
-    pub fn with_leaderboard(key: Uuid) -> Self {
-        Self { leaderboard: key }
+    pub fn with_leaderboard(key: &str) -> Self {
+        Self {
+            leaderboard: Uuid::parse_str(key).expect("invalid leaderboard ID"),
+        }
     }
 }
 
