@@ -140,7 +140,7 @@ pub struct ScoreInput {
 }
 
 impl ScoreInput {
-    pub fn new(leaderboard_key: Uuid, score: f32, player: &Player, meta: Option<String>) -> Self {
+    fn new(leaderboard_key: Uuid, score: f32, player: &Player, meta: Option<String>) -> Self {
         #[cfg(not(target_arch = "wasm32"))]
         let timestamp = SystemTime::now()
             .duration_since(UNIX_EPOCH)
@@ -170,13 +170,13 @@ impl ScoreInput {
 }
 
 #[derive(Deserialize, Debug, Clone)]
-pub struct Player {
+struct Player {
     pub id: Uuid,
     pub key: Uuid,
     pub name: String,
 }
 
 #[derive(Serialize, Debug, Clone)]
-pub struct PlayerInput {
+struct PlayerInput {
     pub name: Option<String>,
 }
