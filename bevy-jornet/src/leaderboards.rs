@@ -2,7 +2,10 @@ use std::sync::{Arc, RwLock};
 #[cfg(not(target_arch = "wasm32"))]
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use bevy::{prelude::ResMut, tasks::IoTaskPool};
+use bevy::{
+    prelude::{warn, ResMut},
+    tasks::IoTaskPool,
+};
 use hmac::{Hmac, Mac};
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;
@@ -48,10 +51,12 @@ impl Leaderboard {
 
         thread_pool
             .spawn(async move {
-                let player: Player = http::post(&format!("{}/api/v1/players", host), player)
-                    .await
-                    .unwrap();
-                *complete_player.write().unwrap() = Some(player);
+                if let Some(player) = http::post(&format!("{}/api/v1/players", host), player).await
+                {
+                    *complete_player.write().unwrap() = Some(player);
+                } else {
+                    warn!("error creating a player");
+                }
             })
             .detach();
     }
@@ -61,18 +66,25 @@ impl Leaderboard {
         let leaderboard_id = self.id;
         let host = self.host.clone();
 
-        let score_to_send = ScoreInput::new(self.key, score, self.player.as_ref().unwrap(), None);
-        thread_pool
-            .spawn(async move {
-                let _: Option<()> = http::post(
-                    &format!("{}/api/v1/scores/{}", host, leaderboard_id),
-                    score_to_send,
-                )
-                .await;
-            })
-            .detach();
-
-        Some(())
+        if let Some(player) = self.player.as_ref() {
+            let score_to_send = ScoreInput::new(self.key, score, player, None);
+            thread_pool
+                .spawn(async move {
+                    if http::post::<_, ()>(
+                        &format!("{}/api/v1/scores/{}", host, leaderboard_id),
+                        score_to_send,
+                    )
+                    .await
+                    .is_none()
+                    {
+                        warn!("error sending the score");
+                    }
+                })
+                .detach();
+            Some(())
+        } else {
+            None
+        }
     }
 
     pub fn refresh_leaderboard(&self) {
@@ -84,10 +96,13 @@ impl Leaderboard {
 
         thread_pool
             .spawn(async move {
-                let scores = http::get(&format!("{}/api/v1/scores/{}", host, leaderboard_id))
-                    .await
-                    .unwrap();
-                *leaderboard_to_update.write().unwrap() = scores;
+                if let Some(scores) =
+                    http::get(&format!("{}/api/v1/scores/{}", host, leaderboard_id)).await
+                {
+                    *leaderboard_to_update.write().unwrap() = scores;
+                } else {
+                    warn!("error getting the leaderboard");
+                }
             })
             .detach();
     }
