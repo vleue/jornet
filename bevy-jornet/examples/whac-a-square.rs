@@ -512,7 +512,7 @@ mod done {
                     },
                 ));
             })
-            .insert(DoneTimer(Timer::from_seconds(5.0, false)));
+            .insert(DoneTimer(Timer::from_seconds(3.0, false)));
     }
 
     fn tick_done(
