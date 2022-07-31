@@ -5,6 +5,8 @@ use uuid::Uuid;
 mod http;
 mod leaderboards;
 
+pub use leaderboards::Score;
+
 pub struct JornetPlugin {
     leaderboard: Uuid,
     key: Uuid,

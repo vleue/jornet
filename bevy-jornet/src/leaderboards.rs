@@ -149,7 +149,7 @@ pub struct Score {
 }
 
 #[derive(Serialize)]
-pub struct ScoreInput {
+struct ScoreInput {
     pub score: f32,
     pub player: Uuid,
     pub meta: Option<String>,
