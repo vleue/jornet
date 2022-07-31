@@ -56,11 +56,11 @@ async fn request<B: Serialize, R: DeserializeOwned>(url: &str, body: Option<B>) 
         .ok()?;
     // converting the JsValue to the correct type - can't fail
     let resp: Response = resp_value.dyn_into().unwrap();
-    let value = match JsFuture::from(resp.json().unwrap()).await {
-        Ok(value) => value,
-        // there wasn't a body
-        _ => JsValue::NULL,
-    };
-    // can fail if value is not of the correct type
-    value.into_serde().ok()
+    JsFuture::from(resp.json().unwrap())
+        .await
+        .ok()
+        .and_then(|value| 
+            // can fail if value is not of the correct type
+            value.into_serde().ok()
+        )
 }

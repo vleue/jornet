@@ -78,7 +78,7 @@ async fn save_score(
             if score.verify_mac(player.key, leaderboard_key)
                 && Score::save(&score, &connection, &leaderboard).await
             {
-                HttpResponse::Ok().finish()
+                HttpResponse::Ok().json(())
             } else {
                 HttpResponse::InternalServerError().finish()
             }
