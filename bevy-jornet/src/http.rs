@@ -59,8 +59,7 @@ async fn request<B: Serialize, R: DeserializeOwned>(url: &str, body: Option<B>) 
     JsFuture::from(resp.json().unwrap())
         .await
         .ok()
-        .and_then(|value| 
+        .and_then(|value|
             // can fail if value is not of the correct type
-            value.into_serde().ok()
-        )
+            value.into_serde().ok())
 }
