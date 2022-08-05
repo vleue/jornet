@@ -58,7 +58,7 @@
     "@types/react-router-bootstrap": "^0.24.5",
     "@types/react-syntax-highlighter": "^15.5.4",
     "@types/uuid": "^8.3.4",
-    "@types/validator": "^13.7.4"
+    "@types/validator": "^13.7.5"
   },
   "proxy": "http://127.0.0.1:8080/"
 }
