@@ -165,6 +165,8 @@ impl Leaderboard {
 }
 
 /// System to handle refreshing the [`Leaderboard`] resource when new data is available.
+/// It is automatically added by the [`JornetPlugin`](crate::JornetPlugin) in stage
+/// [`CoreStage::Update`](bevy::prelude::CoreStage).
 pub fn done_refreshing_leaderboard(mut leaderboard: ResMut<Leaderboard>) {
     if !leaderboard
         .updating

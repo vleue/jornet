@@ -1,5 +1,7 @@
 #![warn(missing_docs)]
 
+//! ![Jornet logo](https://jornet.vleue.com/logo-200.png)
+//!
 //! Bevy Plugin to integrate with [Jornet](https://jornet.vleue.com)
 //! - save high scores
 //! - get a leaderboard
