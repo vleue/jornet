@@ -172,38 +172,43 @@ mod menu {
                         ));
                     });
             });
-        commands.spawn_bundle(
-            TextBundle::from_sections([
-                TextSection {
-                    value: "you are: ".to_string(),
-                    style: TextStyle {
-                        font: asset_server.load("FiraSans-Bold.ttf"),
-                        font_size: 20.0,
-                        color: Color::hex(TEXT).unwrap(),
+        commands
+            .spawn_bundle(
+                TextBundle::from_sections([
+                    TextSection {
+                        value: "you are: ".to_string(),
+                        style: TextStyle {
+                            font: asset_server.load("FiraSans-Bold.ttf"),
+                            font_size: 20.0,
+                            color: Color::hex(TEXT).unwrap(),
+                        },
                     },
-                },
-                TextSection {
-                    value: leaderboard.get_player_name().unwrap_or_default(),
-                    style: TextStyle {
-                        font: asset_server.load("FiraSans-Bold.ttf"),
-                        font_size: 25.0,
-                        color: Color::hex(TEXT).unwrap(),
+                    TextSection {
+                        value: leaderboard.get_player_name().unwrap_or_default(),
+                        style: TextStyle {
+                            font: asset_server.load("FiraSans-Bold.ttf"),
+                            font_size: 25.0,
+                            color: Color::hex(TEXT).unwrap(),
+                        },
                     },
-                },
-            ])
-            .with_style(Style {
-                position_type: PositionType::Absolute,
-                position: UiRect {
-                    left: Val::Px(10.0),
-                    bottom: Val::Px(10.0),
+                ])
+                .with_style(Style {
+                    position_type: PositionType::Absolute,
+                    position: UiRect {
+                        left: Val::Px(10.0),
+                        bottom: Val::Px(10.0),
+                        ..default()
+                    },
                     ..default()
-                },
-                ..default()
-            }),
-        );
+                }),
+            )
+            .insert(PlayerName);
 
         leaderboard.refresh_leaderboard();
     }
+
+    #[derive(Component)]
+    struct PlayerName;
 
     #[derive(Component)]
     enum LeaderboardMarker {
@@ -216,8 +221,12 @@ mod menu {
         mut commands: Commands,
         asset_server: Res<AssetServer>,
         root_ui: Query<(Entity, &LeaderboardMarker)>,
+        mut player_name: Query<&mut Text, With<PlayerName>>,
     ) {
         if leaderboard.is_changed() {
+            if let Some(name) = leaderboard.get_player_name() {
+                player_name.single_mut().sections[1].value = name;
+            }
             let leaderboard = leaderboard.get_leaderboard();
             for (root_entity, marker) in &root_ui {
                 commands.entity(root_entity).despawn_descendants();
