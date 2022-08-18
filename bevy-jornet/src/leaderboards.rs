@@ -13,6 +13,7 @@ use uuid::Uuid;
 
 use crate::http;
 
+/// Leaderboard resource, used to interact with Jornet leaderboard.
 pub struct Leaderboard {
     id: Uuid,
     key: Uuid,
@@ -36,10 +37,18 @@ impl Leaderboard {
         }
     }
 
-    pub fn get_player_name(&self) -> Option<String> {
-        self.player.as_ref().map(|p| p.name.clone())
+    /// Get the current player name.
+    ///
+    /// This can be used to get the random name generated if one was not specified when
+    /// creating the player, or to save the `id`/`key` locally to be able to reconnect later
+    /// as the same player.
+    pub fn get_player(&self) -> Option<&Player> {
+        self.player.as_ref()
     }
 
+    /// Create a player. If you don't specify a name, one will be genertaed randomly.
+    ///
+    /// Either this or [`Self::as_player`] must be called before sending a score.
     pub fn create_player(&mut self, name: Option<&str>) {
         let thread_pool = IoTaskPool::get();
         let host = self.host.clone();
@@ -61,13 +70,32 @@ impl Leaderboard {
             .detach();
     }
 
+    /// Connect as a returning player.
+    ///
+    /// Either this or [`Self::create_player`] must be called before sending a score.
+    pub fn as_player(&mut self, player: Player) {
+        self.player = Some(player);
+    }
+
+    /// Send a score to the leaderboard.
     pub fn send_score(&self, score: f32) -> Option<()> {
+        self.inner_send_score_with_meta(score, None)
+    }
+
+    /// Send a score with metadata to the leaderboard.
+    ///
+    /// Metadata can be information about the game, victory conditions, ...
+    pub fn send_score_with_meta(&self, score: f32, meta: &str) -> Option<()> {
+        self.inner_send_score_with_meta(score, Some(meta.to_string()))
+    }
+
+    fn inner_send_score_with_meta(&self, score: f32, meta: Option<String>) -> Option<()> {
         let thread_pool = IoTaskPool::get();
         let leaderboard_id = self.id;
         let host = self.host.clone();
 
         if let Some(player) = self.player.as_ref() {
-            let score_to_send = ScoreInput::new(self.key, score, player, None);
+            let score_to_send = ScoreInput::new(self.key, score, player, meta);
             thread_pool
                 .spawn(async move {
                     if http::post::<_, ()>(
@@ -87,6 +115,11 @@ impl Leaderboard {
         }
     }
 
+    /// Refresh the leaderboard, and get the most recent data from the server.
+    ///
+    /// This is done asynchronously, the resource [`Leaderboard`] will be marked as changed
+    /// once the leaderboard data is available. You can then get those data with
+    /// [`Self::get_leaderboard`].
     pub fn refresh_leaderboard(&self) {
         let thread_pool = IoTaskPool::get();
         let leaderboard_id = self.id;
@@ -107,11 +140,28 @@ impl Leaderboard {
             .detach();
     }
 
+    /// Get the leaderboard data. It must be refreshed first with [`Self::refresh_leaderboard`],
+    /// which will mark the [`Leaderboard`] resource as changed once the data has been refreshed.
+    ///
+    /// Example system:
+    ///
+    /// ```rust
+    /// fn display_scores(
+    ///     leaderboard: Res<Leaderboard>,
+    /// ) {
+    ///     if leaderboard.is_changed() {
+    ///         for score in &leaderboard.get_leaderboard() {
+    ///             info!("{:?}", score);
+    ///         }
+    ///     }
+    /// }
+    /// ```
     pub fn get_leaderboard(&self) -> Vec<Score> {
         self.leaderboard.clone()
     }
 }
 
+/// System to handle refreshing the [`Leaderboard`] resource when new data is available.
 pub fn done_refreshing_leaderboard(mut leaderboard: ResMut<Leaderboard>) {
     if !leaderboard
         .updating
@@ -140,11 +190,16 @@ pub fn done_refreshing_leaderboard(mut leaderboard: ResMut<Leaderboard>) {
     }
 }
 
+/// A score from a leaderboard
 #[derive(Deserialize, Debug, Clone)]
 pub struct Score {
+    /// The score.
     pub score: f32,
+    /// The player name.
     pub player: String,
+    /// Optional metadata.
     pub meta: Option<String>,
+    /// Timestamp of the score.
     pub timestamp: String,
 }
 
@@ -187,8 +242,8 @@ impl ScoreInput {
     }
 }
 
-#[derive(Deserialize, Debug, Clone)]
-struct Player {
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct Player {
     pub id: Uuid,
     pub key: Uuid,
     pub name: String,

@@ -184,7 +184,10 @@ mod menu {
                         },
                     },
                     TextSection {
-                        value: leaderboard.get_player_name().unwrap_or_default(),
+                        value: leaderboard
+                            .get_player()
+                            .map(|p| p.name.clone())
+                            .unwrap_or_default(),
                         style: TextStyle {
                             font: asset_server.load("FiraSans-Bold.ttf"),
                             font_size: 25.0,
@@ -224,8 +227,8 @@ mod menu {
         mut player_name: Query<&mut Text, With<PlayerName>>,
     ) {
         if leaderboard.is_changed() {
-            if let Some(name) = leaderboard.get_player_name() {
-                player_name.single_mut().sections[1].value = name;
+            if let Some(player) = leaderboard.get_player() {
+                player_name.single_mut().sections[1].value = player.name.clone();
             }
             let leaderboard = leaderboard.get_leaderboard();
             for (root_entity, marker) in &root_ui {
