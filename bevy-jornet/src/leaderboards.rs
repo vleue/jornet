@@ -146,12 +146,15 @@ impl Leaderboard {
     /// Example system:
     ///
     /// ```rust
+    /// # use bevy::prelude::*;
+    /// # use bevy_jornet::Leaderboard;
+    ///
     /// fn display_scores(
     ///     leaderboard: Res<Leaderboard>,
     /// ) {
     ///     if leaderboard.is_changed() {
     ///         for score in &leaderboard.get_leaderboard() {
-    ///             info!("{:?}", score);
+    ///             // Display the score how you want
     ///         }
     ///     }
     /// }
