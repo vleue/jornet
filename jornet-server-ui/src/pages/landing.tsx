@@ -78,8 +78,8 @@ class About extends Component {
     render() {
         return (
             <div>
-                Jornet is made for game jams. This means it will always be free for game jams, and will stay available.<br />
-                Please consider sponsoring me if you intend to use it for something more than a game jam.<br />
+                Jornet is made for game jams. This means it will always be free for game jams, and will stay available. It works in WASM and on native platforms.<br />
+                Please consider sponsoring me if you intend to use it for something more than a game jam.<hr />
                 Data older than 3 months may be deleted.
             </div>
         );
