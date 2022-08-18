@@ -7,6 +7,9 @@ description = "Bevy plugin for Jornet - a social game server"
 categories = ["game-development"]
 keywords = ["bevy", "social", "leaderboard", "score"]
 exclude = ["assets/", "leaderboard.png"]
+repository = "https://github.com/vleue/jornet/tree/main/bevy-jornet"
+homepage = "https://jornet.vleue.com"
+documentation = "https://docs.rs/bevy_jornet"
 
 [dependencies.bevy]
 version = "0.8.0"
