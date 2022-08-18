@@ -1,6 +1,6 @@
 const CLEAR: &str = "023047";
-const BACKGROUND: &str = "784200";
-const BUTTON: &str = "A55B00";
+const BACKGROUND: &str = "439775";
+const BUTTON: &str = "2A4747";
 const TEXT: &str = "8ecae6";
 const SQUARE: &str = "219ebc";
 
