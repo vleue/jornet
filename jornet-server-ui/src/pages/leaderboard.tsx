@@ -1,4 +1,4 @@
-import { Component } from "react";
+import { PureComponent } from "react";
 import { Col, Container, Row, Table } from "react-bootstrap";
 import { useParams } from "react-router-dom";
 
@@ -12,13 +12,14 @@ type Score = {
 
 type LeaderboardProps = {
     leaderboardId?: string,
+    refresh: number,
 };
 type LeaderboardState = {
     scores: Score[],
 };
 
 
-class LeaderboardInner extends Component<LeaderboardProps, LeaderboardState> {
+class LeaderboardInner extends PureComponent<LeaderboardProps, LeaderboardState> {
     state: LeaderboardState = {
         scores: []
     };
@@ -28,6 +29,16 @@ class LeaderboardInner extends Component<LeaderboardProps, LeaderboardState> {
             .then(data => {
                 this.setState({ scores: data });
             });
+    }
+
+    componentDidUpdate(prevProps: LeaderboardProps) {
+        if (this.props.refresh !== prevProps.refresh) {
+            fetch("/api/v1/scores/" + this.props.leaderboardId)
+                .then(response => response.json())
+                .then(data => {
+                    this.setState({ scores: data });
+                });
+        }
     }
 
     render() {

@@ -66,7 +66,7 @@ class App extends Component<AppProps, AppState> {
                 <Route path="/" element={<Landing />} />
                 <Route path="/connect" element={<Connect setToken={this.setToken} />} />
                 <Route path="/dashboard" element={<Dashboard token={this.state.token} setLoginInfo={this.setLoginInfo} setToken={this.setToken} />} />
-                <Route path="/leaderboard/:leaderboardId" element={<Leaderboard />} />
+                <Route path="/leaderboard/:leaderboardId" element={<Leaderboard refresh={0} />} />
               </Routes>
             </div></div>
         </Router>

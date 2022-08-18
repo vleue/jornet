@@ -85,8 +85,13 @@ class About extends Component {
         );
     }
 }
-
-class Landing extends Component {
+type LandingState = {
+    refreshLeaderboard: number,
+};
+class Landing extends Component<{}, LandingState> {
+    state: LandingState = {
+        refreshLeaderboard: 0
+    };
     render() {
         return (
             <>
@@ -144,12 +149,18 @@ class Landing extends Component {
                                 defaultActiveKey="wasm-demo"
                                 id="landing-tabs"
                                 className="mb-3"
+                                justify
+                                onSelect={(k) => {
+                                    if (k === 'view-leaderboard') {
+                                        this.setState({ refreshLeaderboard: Date.now() });
+                                    }
+                                }}
                             >
                                 <Tab eventKey="wasm-demo" title="Bevy Demo">
                                     <canvas id="demo-leaderboard"></canvas>
                                 </Tab>
                                 <Tab eventKey="view-leaderboard" title="View Leaderboard">
-                                    <Leaderboard leaderboardId="edd47bbb-5d64-4a2b-84f5-b1fe9f31ec4c" />
+                                    <Leaderboard leaderboardId="edd47bbb-5d64-4a2b-84f5-b1fe9f31ec4c" refresh={this.state.refreshLeaderboard} />
                                 </Tab>
                                 <Tab eventKey="bevy-integration" title="Bevy Integration">
                                     <BevyIntegration />
