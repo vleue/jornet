@@ -29,6 +29,10 @@ jobs:
 
       - name: build wasm demo
         run: |
+          // temp fix for https://github.com/bevyengine/bevy/issues/5426
+          echo [patch.crates-io] >> Cargo.toml
+          echo 'wgpu = { git = "https://github.com/mockersf/wgpu/", branch = "unconditional-clear-workaround" }' >> Cargo.toml
+
           cargo build --profile wasm-release --target wasm32-unknown-unknown --example whac-a-square
           wasm-bindgen --out-dir wasm --out-name demo_leaderboard --target web target/wasm32-unknown-unknown/wasm-release/examples/whac-a-square.wasm
           wasm-opt -Oz wasm/demo_leaderboard_bg.wasm --output wasm/demo_leaderboard_bg-opt.wasm
