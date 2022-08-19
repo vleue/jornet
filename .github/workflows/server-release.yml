@@ -30,7 +30,7 @@ jobs:
       - name: build wasm demo
         run: |
           # temp fix for https://github.com/bevyengine/bevy/issues/5426
-          echo [patch.crates-io] >> Cargo.toml
+          echo '[patch.crates-io]'' >> Cargo.toml
           echo 'wgpu = { git = "https://github.com/mockersf/wgpu/", branch = "unconditional-clear-workaround" }' >> Cargo.toml
 
           cargo build --profile wasm-release --target wasm32-unknown-unknown --example whac-a-square
@@ -39,6 +39,10 @@ jobs:
           cp -r bevy-jornet/assets jornet-server-ui/public/
           cp wasm/demo_leaderboard_bg-opt.wasm jornet-server-ui/public/demo_leaderboard_bg.wasm
           cp wasm/demo_leaderboard.js jornet-server-ui/public/
+
+          # remove temp patch
+          git restore Cargo.toml
+
         env:
           JORNET_LEADERBOARD_ID: ${{ secrets.JORNET_LEADERBOARD_ID }}
           JORNET_LEADERBOARD_KEY: ${{ secrets.JORNET_LEADERBOARD_KEY }}
