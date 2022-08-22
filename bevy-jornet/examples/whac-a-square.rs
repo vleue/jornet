@@ -21,12 +21,114 @@ fn main() {
             option_env!("JORNET_LEADERBOARD_ID").unwrap_or("a920de64-3bdb-4f8e-87a8-e7bf20f00f81"),
             option_env!("JORNET_LEADERBOARD_KEY").unwrap_or("a797039b-a91d-43e6-8e1c-94f9ca0aa1d6"),
         ))
+        .add_plugin(debug::DebugPlugin)
         .add_startup_system(setup)
         .add_state(GameState::Menu)
         .add_plugin(menu::MenuPlugin)
         .add_plugin(game::GamePlugin)
         .add_plugin(done::DonePlugin)
         .run();
+}
+
+mod debug {
+    use crate::{BACKGROUND, TEXT};
+    use bevy::prelude::*;
+    use bevy_jornet::ErrorEvent;
+
+    pub struct DebugPlugin;
+
+    impl Plugin for DebugPlugin {
+        fn build(&self, app: &mut bevy::prelude::App) {
+            app.add_startup_system(setup)
+                .add_system_to_stage(CoreStage::PostUpdate, react_to_errors)
+                .add_system(despawn_after);
+        }
+    }
+
+    #[derive(Component)]
+    struct DebugContainer;
+
+    /// Despawns recursively host entity when `Time.seconds_since_startup()` exceeds than value
+    #[derive(Component)]
+    struct DespawnAfter(f64);
+
+    fn setup(mut commands: Commands) {
+        commands
+            .spawn_bundle(NodeBundle {
+                style: Style {
+                    align_self: AlignSelf::FlexEnd,
+                    flex_direction: FlexDirection::ColumnReverse,
+                    position_type: PositionType::Absolute,
+                    position: UiRect {
+                        top: Val::Px(5.0),
+                        right: Val::Px(15.0),
+                        ..default()
+                    },
+                    max_size: Size {
+                        width: Val::Px(400.),
+                        height: Val::Undefined,
+                    },
+                    align_items: AlignItems::FlexEnd,
+                    ..default()
+                },
+                color: Color::hex(BACKGROUND).unwrap().into(),
+                ..default()
+            })
+            .insert(DebugContainer);
+    }
+
+    fn react_to_errors(
+        mut commands: Commands,
+        asset_server: Res<AssetServer>,
+        time: Res<Time>,
+        mut error_event: EventReader<bevy_jornet::ErrorEvent>,
+        query_error_container: Query<Entity, With<DebugContainer>>,
+    ) {
+        for error in error_event.iter() {
+            dbg!("received error in app");
+            for e in query_error_container.iter() {
+                dbg!("spawning error");
+                commands.entity(e).with_children(|parent| {
+                    parent
+                        .spawn_bundle(
+                            TextBundle::from_section(
+                                match error {
+                                    bevy_jornet::ErrorEvent::SendScoreFailed(error) => {
+                                        format!("{error}")
+                                    }
+                                },
+                                TextStyle {
+                                    font: asset_server.load("FiraSans-Bold.ttf"),
+                                    font_size: 50.0,
+                                    color: Color::rgb(0.8, 0.2, 0.7),
+                                },
+                            )
+                            .with_text_alignment(TextAlignment::CENTER)
+                            .with_style(Style {
+                                align_self: AlignSelf::FlexEnd,
+                                margin: UiRect::all(Val::Auto),
+                                justify_content: JustifyContent::Center,
+                                flex_direction: FlexDirection::ColumnReverse,
+                                ..default()
+                            }),
+                        )
+                        .insert(DespawnAfter(time.seconds_since_startup() + 3f64));
+                });
+            }
+        }
+    }
+
+    fn despawn_after(
+        time: Res<Time>,
+        mut commands: Commands,
+        q_to_unspawn: Query<(Entity, &DespawnAfter)>,
+    ) {
+        for (e, despawn) in q_to_unspawn.iter() {
+            if despawn.0 < time.seconds_since_startup() {
+                commands.entity(e).despawn_recursive();
+            }
+        }
+    }
 }
 
 #[derive(Clone, PartialEq, Eq, Debug, Hash)]
@@ -52,6 +154,9 @@ mod menu {
 
     use crate::{GameState, BACKGROUND, BUTTON, TEXT};
     pub struct MenuPlugin;
+
+    #[derive(Component)]
+    struct MenuUI;
 
     impl Plugin for MenuPlugin {
         fn build(&self, app: &mut App) {
@@ -89,6 +194,7 @@ mod menu {
                 color: Color::hex(BACKGROUND).unwrap().into(),
                 ..default()
             })
+            .insert(MenuUI)
             .with_children(|parent| {
                 parent.spawn_bundle(TextBundle::from_section(
                     "Whac-A-Square",
@@ -205,6 +311,7 @@ mod menu {
                     ..default()
                 }),
             )
+            .insert(MenuUI)
             .insert(PlayerName);
 
         leaderboard.refresh_leaderboard();
@@ -252,7 +359,10 @@ mod menu {
         }
     }
 
-    fn despawn_menu(mut commands: Commands, root_ui: Query<Entity, (With<Node>, Without<Parent>)>) {
+    fn despawn_menu(
+        mut commands: Commands,
+        root_ui: Query<Entity, (With<Node>, With<MenuUI>, Without<Parent>)>,
+    ) {
         for entity in &root_ui {
             commands.entity(entity).despawn_recursive();
         }
@@ -317,6 +427,11 @@ mod game {
         }
     }
 
+    #[derive(Component)]
+    struct ScoreTextMarker;
+    #[derive(Component)]
+    struct TimerMarker;
+
     fn setup_game(mut commands: Commands, asset_server: Res<AssetServer>) {
         commands.insert_resource(WinitSettings {
             focused_mode: UpdateMode::Reactive {
@@ -329,41 +444,45 @@ mod game {
             time_to_click: Timer::from_seconds(10.0, false),
             since_start: Stopwatch::new(),
         });
-        commands.spawn_bundle(
-            TextBundle::from_section(
-                "0",
-                TextStyle {
-                    font: asset_server.load("FiraSans-Bold.ttf"),
-                    font_size: 50.0,
-                    color: Color::hex(TEXT).unwrap(),
-                },
+        commands
+            .spawn_bundle(
+                TextBundle::from_section(
+                    "0",
+                    TextStyle {
+                        font: asset_server.load("FiraSans-Bold.ttf"),
+                        font_size: 50.0,
+                        color: Color::hex(TEXT).unwrap(),
+                    },
+                )
+                .with_style(Style {
+                    align_self: AlignSelf::FlexEnd,
+                    position_type: PositionType::Absolute,
+                    position: UiRect {
+                        top: Val::Px(10.0),
+                        left: Val::Px(15.0),
+                        ..default()
+                    },
+                    ..default()
+                }),
             )
-            .with_style(Style {
-                align_self: AlignSelf::FlexEnd,
-                position_type: PositionType::Absolute,
-                position: UiRect {
-                    top: Val::Px(10.0),
-                    left: Val::Px(15.0),
+            .insert(ScoreTextMarker);
+        commands
+            .spawn_bundle(NodeBundle {
+                style: Style {
+                    align_self: AlignSelf::FlexEnd,
+                    position_type: PositionType::Absolute,
+                    position: UiRect {
+                        top: Val::Px(0.0),
+                        left: Val::Px(15.0),
+                        ..default()
+                    },
+                    size: Size::new(Val::Px(200.0), Val::Px(8.0)),
                     ..default()
                 },
+                color: Color::hex(SQUARE).unwrap().into(),
                 ..default()
-            }),
-        );
-        commands.spawn_bundle(NodeBundle {
-            style: Style {
-                align_self: AlignSelf::FlexEnd,
-                position_type: PositionType::Absolute,
-                position: UiRect {
-                    top: Val::Px(0.0),
-                    left: Val::Px(15.0),
-                    ..default()
-                },
-                size: Size::new(Val::Px(200.0), Val::Px(8.0)),
-                ..default()
-            },
-            color: Color::hex(SQUARE).unwrap().into(),
-            ..default()
-        });
+            })
+            .insert(TimerMarker);
     }
 
     #[derive(Component)]
@@ -440,8 +559,8 @@ mod game {
 
     fn game_state(
         mut status: ResMut<GameStatus>,
-        mut score_text: Query<&mut Text>,
-        mut timer: Query<&mut Style, Without<Text>>,
+        mut score_text: Query<&mut Text, With<ScoreTextMarker>>,
+        mut timer: Query<&mut Style, (Without<Text>, With<TimerMarker>)>,
         time: Res<Time>,
         mut state: ResMut<State<GameState>>,
     ) {
@@ -457,7 +576,7 @@ mod game {
         status: Res<GameStatus>,
         leaderboard: Res<Leaderboard>,
         mut commands: Commands,
-        game_ui: Query<Entity, With<Node>>,
+        game_ui: Query<Entity, (With<Node>, Or<(With<ScoreTextMarker>, With<TimerMarker>)>)>,
         squares: Query<Entity, With<Sprite>>,
     ) {
         for entity in &game_ui {

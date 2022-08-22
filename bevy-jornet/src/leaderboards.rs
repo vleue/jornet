@@ -1,9 +1,12 @@
-use std::sync::{Arc, RwLock};
 #[cfg(not(target_arch = "wasm32"))]
 use std::time::{SystemTime, UNIX_EPOCH};
+use std::{
+    fmt::Display,
+    sync::{Arc, RwLock},
+};
 
 use bevy::{
-    prelude::{warn, ResMut},
+    prelude::{warn, EventWriter, ResMut},
     tasks::IoTaskPool,
 };
 use hmac::{Hmac, Mac};
@@ -13,12 +16,33 @@ use uuid::Uuid;
 
 use crate::http;
 
+pub struct SendScoreFailed {
+    score_to_send: ScoreInput,
+}
+
+impl std::fmt::Display for SendScoreFailed {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "SendScoreFailed: score: {}, player: {}",
+            self.score_to_send.score, self.score_to_send.player
+        )
+    }
+}
+
+/// Event to handle errors, will be sent asynchronously when occuring
+pub enum ErrorEvent {
+    /// Occurs when [`send_score`] or [`send_score_with_meta`] fails
+    SendScoreFailed(SendScoreFailed),
+}
+
 /// Leaderboard resource, used to interact with Jornet leaderboard.
 pub struct Leaderboard {
     id: Uuid,
     key: Uuid,
     leaderboard: Vec<Score>,
     updating: Arc<RwLock<Vec<Score>>>,
+    error_pending: Arc<RwLock<Vec<ErrorEvent>>>,
     host: String,
     new_player: Arc<RwLock<Option<Player>>>,
     player: Option<Player>,
@@ -31,6 +55,7 @@ impl Leaderboard {
             key,
             leaderboard: Default::default(),
             updating: Default::default(),
+            error_pending: Default::default(),
             host: "https://jornet.vleue.com".to_string(),
             new_player: Default::default(),
             player: Default::default(),
@@ -96,8 +121,16 @@ impl Leaderboard {
 
         if let Some(player) = self.player.as_ref() {
             let score_to_send = ScoreInput::new(self.key, score, player, meta);
+            let error_pending = self.error_pending.clone();
             thread_pool
                 .spawn(async move {
+                    (*error_pending)
+                        .write()
+                        .unwrap()
+                        .push(ErrorEvent::SendScoreFailed(SendScoreFailed {
+                            score_to_send,
+                        }));
+                    /*
                     if http::post::<_, ()>(
                         &format!("{}/api/v1/scores/{}", host, leaderboard_id),
                         score_to_send,
@@ -106,7 +139,7 @@ impl Leaderboard {
                     .is_none()
                     {
                         warn!("error sending the score");
-                    }
+                    }*/
                 })
                 .detach();
             Some(())
@@ -257,4 +290,22 @@ pub struct Player {
 #[derive(Serialize, Debug, Clone)]
 struct PlayerInput {
     pub name: Option<String>,
+}
+
+/// System to handle errors in any tasks.
+/// It is responsible to propagate an [`ErrorEvent`].
+/// It is automatically added by the [`JornetPlugin`](crate::JornetPlugin) in stage
+/// [`CoreStage::Update`](bevy::prelude::CoreStage).
+pub fn handle_errors(leaderboard: ResMut<Leaderboard>, mut error_event: EventWriter<ErrorEvent>) {
+    if !leaderboard
+        .error_pending
+        .try_read()
+        .map(|v| v.is_empty())
+        .unwrap_or(true)
+    {
+        let mut errors = leaderboard.error_pending.write().unwrap();
+        for e in errors.drain(..) {
+            error_event.send(e);
+        }
+    }
 }

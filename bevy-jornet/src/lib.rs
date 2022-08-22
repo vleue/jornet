@@ -7,13 +7,14 @@
 //! - get a leaderboard
 
 use bevy::prelude::{App, Plugin};
+use leaderboards::handle_errors;
 pub use leaderboards::Leaderboard;
 use uuid::Uuid;
 
 mod http;
 mod leaderboards;
 
-pub use leaderboards::{done_refreshing_leaderboard, Score};
+pub use leaderboards::{done_refreshing_leaderboard, ErrorEvent, Score};
 
 /// Bevy Plugin handling communications with the Jornet server.
 pub struct JornetPlugin {
@@ -39,7 +40,9 @@ impl JornetPlugin {
 impl Plugin for JornetPlugin {
     fn build(&self, app: &mut App) {
         let leaderboard = Leaderboard::with_leaderboard(self.leaderboard, self.key);
-        app.insert_resource(leaderboard)
-            .add_system(done_refreshing_leaderboard);
+        app.add_event::<ErrorEvent>()
+            .insert_resource(leaderboard)
+            .add_system(done_refreshing_leaderboard)
+            .add_system(handle_errors);
     }
 }
