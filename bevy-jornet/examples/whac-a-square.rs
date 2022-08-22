@@ -85,9 +85,7 @@ mod debug {
         query_error_container: Query<Entity, With<DebugContainer>>,
     ) {
         for error in error_event.iter() {
-            dbg!("received error in app");
             for e in query_error_container.iter() {
-                dbg!("spawning error");
                 commands.entity(e).with_children(|parent| {
                     parent
                         .spawn_bundle(
