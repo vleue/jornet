@@ -12,7 +12,7 @@ homepage = "https://jornet.vleue.com"
 documentation = "https://docs.rs/bevy_jornet"
 
 [dependencies.bevy]
-version = "0.8.0"
+version = "0.8.1"
 # git = "https://github.com/bevyengine/bevy"
 default-features = false
 
