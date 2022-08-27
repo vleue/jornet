@@ -42,7 +42,7 @@ fn setup(mut commands: Commands, mut leaderboard: ResMut<Leaderboard>) {
 }
 
 mod menu {
-    use std::time::Duration;
+    use std::{cmp::Ordering, time::Duration};
 
     use bevy::{
         prelude::*,
@@ -230,7 +230,11 @@ mod menu {
             if let Some(player) = leaderboard.get_player() {
                 player_name.single_mut().sections[1].value = player.name.clone();
             }
-            let leaderboard = leaderboard.get_leaderboard();
+            let mut leaderboard = leaderboard.get_leaderboard();
+            leaderboard.sort_unstable_by(|s1, s2| {
+                s2.score.partial_cmp(&s1.score).unwrap_or(Ordering::Equal)
+            });
+            leaderboard.truncate(10);
             for (root_entity, marker) in &root_ui {
                 commands.entity(root_entity).despawn_descendants();
                 for score in &leaderboard {
