@@ -217,6 +217,7 @@ class DashboardInner extends Component<DashboardProps, DashboardState> {
                                     <th>Leaderboard</th>
                                     <th>Scores</th>
                                     <th>ID</th>
+                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -232,6 +233,15 @@ class DashboardInner extends Component<DashboardProps, DashboardState> {
                                             <td style={{ display: "flex" }}>
                                                 <p className="font-monospace">{leaderboard.id}</p>
                                                 <ClipboardHelper to_copy={leaderboard.id} />
+                                            </td>
+                                            <td>
+                                                <Button
+                                                    variant="primary"
+                                                    data-leaderboard-id={leaderboard.id}
+                                                    onClick={this.handleResetLeaderboard}
+                                                >
+                                                    Reset
+                                                </Button>
                                             </td>
                                         </tr>
                                     })
@@ -263,6 +273,25 @@ class DashboardInner extends Component<DashboardProps, DashboardState> {
                 leaderboards.push(data)
                 this.setState({ leaderboards: leaderboards });
                 this.setState({ new_leaderboard_data: data });
+            }).catch(error => {
+                this.props.setLoginInfo(undefined);
+                this.props.setToken(undefined);
+            });
+        event.preventDefault();
+    }
+    handleResetLeaderboard = (event: React.FormEvent) => {
+        let leaderboardId = event.currentTarget.getAttribute('data-leaderboard-id');
+        const requestOptions = {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + this.props.token!
+            },
+        };
+        fetch('/api/v1/scores/' + leaderboardId, requestOptions)
+            .then(response => response.json())
+            .then(data => {
+                // TODO
             }).catch(error => {
                 this.props.setLoginInfo(undefined);
                 this.props.setToken(undefined);
