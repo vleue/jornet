@@ -1,9 +1,6 @@
+use std::sync::{Arc, RwLock};
 #[cfg(not(target_arch = "wasm32"))]
 use std::time::{SystemTime, UNIX_EPOCH};
-use std::{
-    cmp::Ordering,
-    sync::{Arc, RwLock},
-};
 
 use bevy::{
     prelude::{warn, ResMut},
@@ -177,15 +174,12 @@ pub fn done_refreshing_leaderboard(mut leaderboard: ResMut<Leaderboard>) {
         .map(|v| v.is_empty())
         .unwrap_or(true)
     {
-        let mut updated = leaderboard
+        let updated = leaderboard
             .updating
             .write()
             .unwrap()
             .drain(..)
             .collect::<Vec<_>>();
-        updated
-            .sort_unstable_by(|s1, s2| s2.score.partial_cmp(&s1.score).unwrap_or(Ordering::Equal));
-        updated.truncate(10);
         leaderboard.leaderboard = updated;
     }
     if leaderboard
