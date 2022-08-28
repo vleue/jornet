@@ -53,10 +53,15 @@ async fn get_leaderboards(
 }
 
 async fn delete_all_scores(
+    account: web::ReqData<AdminAccount>,
     connection: web::Data<PgPool>,
     leaderboard: web::Path<Uuid>,
 ) -> impl Responder {
-    HttpResponse::Ok().json(Leaderboard::delete_all_scores(&connection, &leaderboard).await)
+    if Leaderboard::get_owner(&connection, &leaderboard).await == Some(account.id) {
+        HttpResponse::Ok().json(Leaderboard::delete_all_scores(&connection, &leaderboard).await)
+    } else {
+        HttpResponse::Unauthorized().finish()
+    }
 }
 
 pub(crate) fn leaderboard(kp: web::Data<KeyPair>) -> impl HttpServiceFactory {
@@ -94,6 +99,14 @@ impl Leaderboard {
             .fetch_one(connection)
             .await
             .map(|r| r.key)
+            .ok()
+    }
+
+    pub async fn get_owner(connection: &PgPool, id: &Uuid) -> Option<Uuid> {
+        sqlx::query!("SELECT owner FROM leaderboards WHERE id = $1;", id)
+            .fetch_one(connection)
+            .await
+            .map(|r| r.owner)
             .ok()
     }
 
