@@ -25,13 +25,13 @@ pub struct Leaderboard {
 }
 
 impl Leaderboard {
-    pub(crate) fn with_leaderboard(id: Uuid, key: Uuid) -> Self {
+    pub(crate) fn with_host_and_leaderboard(host: Option<String>, id: Uuid, key: Uuid) -> Self {
         Self {
             id,
             key,
             leaderboard: Default::default(),
             updating: Default::default(),
-            host: "https://jornet.vleue.com".to_string(),
+            host: host.unwrap_or_else(|| "https://jornet.vleue.com".to_string()),
             new_player: Default::default(),
             player: Default::default(),
         }

@@ -19,6 +19,7 @@ pub use leaderboards::{done_refreshing_leaderboard, Score};
 pub struct JornetPlugin {
     leaderboard: Uuid,
     key: Uuid,
+    host: Option<String>,
 }
 
 impl JornetPlugin {
@@ -32,13 +33,23 @@ impl JornetPlugin {
         Self {
             leaderboard: Uuid::parse_str(id).expect("invalid leaderboard ID"),
             key: Uuid::parse_str(key).expect("invalid leaderboard key"),
+            host: None,
+        }
+    }
+
+    /// Set the plugin to use another host than <https://jornet.vleue.com>.
+    pub fn with_host(self, host: &str) -> Self {
+        Self {
+            host: Some(host.to_string()),
+            ..self
         }
     }
 }
 
 impl Plugin for JornetPlugin {
     fn build(&self, app: &mut App) {
-        let leaderboard = Leaderboard::with_leaderboard(self.leaderboard, self.key);
+        let leaderboard =
+            Leaderboard::with_host_and_leaderboard(self.host.clone(), self.leaderboard, self.key);
         app.insert_resource(leaderboard)
             .add_system(done_refreshing_leaderboard);
     }
