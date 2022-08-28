@@ -288,7 +288,7 @@ class DashboardInner extends Component<DashboardProps, DashboardState> {
                 'Authorization': 'Bearer ' + this.props.token!
             },
         };
-        fetch('/api/v1/scores/' + leaderboardId, requestOptions)
+        fetch('/api/v1/leaderboards/' + leaderboardId + '/scores', requestOptions)
             .then(response => response.json())
             .then(data => {
                 // TODO
