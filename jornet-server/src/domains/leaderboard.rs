@@ -52,12 +52,23 @@ async fn get_leaderboards(
     HttpResponse::Ok().json(Leaderboard::get_all(&connection, account.id).await)
 }
 
+async fn delete_all_scores(
+    connection: web::Data<PgPool>,
+    leaderboard: web::Path<Uuid>,
+) -> impl Responder {
+    HttpResponse::Ok().json(Leaderboard::delete_all_scores(&connection, &leaderboard).await)
+}
+
 pub(crate) fn leaderboard(kp: web::Data<KeyPair>) -> impl HttpServiceFactory {
     web::scope("api/v1/leaderboards")
         .app_data(kp)
         .wrap(HttpAuthentication::bearer(validator))
         .route("", web::post().to(new_leaderboard))
         .route("", web::get().to(get_leaderboards))
+        .route(
+            "{leaderboard_id}/scores",
+            web::delete().to(delete_all_scores),
+        )
 }
 
 impl Leaderboard {
@@ -99,5 +110,12 @@ impl Leaderboard {
         .execute(connection)
         .await
         .is_ok()
+    }
+
+    pub async fn delete_all_scores(connection: &PgPool, leaderboard: &Uuid) -> bool {
+        sqlx::query!("DELETE FROM scores WHERE leaderboard = $1", leaderboard)
+            .execute(connection)
+            .await
+            .is_ok()
     }
 }
