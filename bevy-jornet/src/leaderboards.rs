@@ -245,14 +245,18 @@ impl ScoreInput {
     }
 }
 
+/// A player, as returned from the server
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Player {
+    /// its ID
     pub id: Uuid,
+    /// its key, this should be kept secret
     pub key: Uuid,
+    /// its name, changing it here won't be reflected on the server
     pub name: String,
 }
 
 #[derive(Serialize, Debug, Clone)]
 struct PlayerInput {
-    pub name: Option<String>,
+    name: Option<String>,
 }

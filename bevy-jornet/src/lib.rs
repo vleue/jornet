@@ -13,7 +13,7 @@ use uuid::Uuid;
 mod http;
 mod leaderboards;
 
-pub use leaderboards::{done_refreshing_leaderboard, Score};
+pub use leaderboards::{done_refreshing_leaderboard, Player, Score};
 
 /// Bevy Plugin handling communications with the Jornet server.
 pub struct JornetPlugin {
