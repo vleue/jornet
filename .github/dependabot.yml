@@ -4,10 +4,16 @@ updates:
     directory: /
     schedule:
       interval: daily
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-patch"]
   - package-ecosystem: npm
     directory: /jornet-server-ui
     schedule:
       interval: daily
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-patch"]
   - package-ecosystem: github-actions
     directory: /
     schedule:
