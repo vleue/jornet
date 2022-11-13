@@ -9,14 +9,16 @@ use bevy_jornet::{JornetPlugin, Leaderboard};
 
 fn main() {
     App::new()
-        .insert_resource(WindowDescriptor {
-            title: "Whac-A-Square".to_string(),
-            canvas: Some("#demo-leaderboard".to_string()),
-            fit_canvas_to_parent: true,
-            ..default()
-        })
         .insert_resource(ClearColor(Color::hex(CLEAR).unwrap()))
-        .add_plugins(DefaultPlugins)
+        .add_plugins(DefaultPlugins.set(WindowPlugin {
+            window: WindowDescriptor {
+                title: "Whac-A-Square".to_string(),
+                canvas: Some("#demo-leaderboard".to_string()),
+                fit_canvas_to_parent: true,
+                ..default()
+            },
+            ..default()
+        }))
         .add_plugin(JornetPlugin::with_leaderboard(
             option_env!("JORNET_LEADERBOARD_ID").unwrap_or("a920de64-3bdb-4f8e-87a8-e7bf20f00f81"),
             option_env!("JORNET_LEADERBOARD_KEY").unwrap_or("a797039b-a91d-43e6-8e1c-94f9ca0aa1d6"),
@@ -37,7 +39,7 @@ enum GameState {
 }
 
 fn setup(mut commands: Commands, mut leaderboard: ResMut<Leaderboard>) {
-    commands.spawn_bundle(Camera2dBundle::default());
+    commands.spawn(Camera2dBundle::default());
     leaderboard.create_player(None);
 }
 
@@ -77,20 +79,20 @@ mod menu {
             ..WinitSettings::desktop_app()
         });
         commands
-            .spawn_bundle(NodeBundle {
+            .spawn(NodeBundle {
                 style: Style {
                     margin: UiRect::all(Val::Auto),
                     justify_content: JustifyContent::Center,
                     align_items: AlignItems::Center,
-                    flex_direction: FlexDirection::ColumnReverse,
+                    flex_direction: FlexDirection::Column,
                     border: UiRect::all(Val::Px(30.0)),
                     ..default()
                 },
-                color: Color::hex(BACKGROUND).unwrap().into(),
+                background_color: Color::hex(BACKGROUND).unwrap().into(),
                 ..default()
             })
             .with_children(|parent| {
-                parent.spawn_bundle(TextBundle::from_section(
+                parent.spawn(TextBundle::from_section(
                     "Whac-A-Square",
                     TextStyle {
                         font: asset_server.load("FiraSans-Bold.ttf"),
@@ -98,7 +100,7 @@ mod menu {
                         color: Color::hex(TEXT).unwrap(),
                     },
                 ));
-                parent.spawn_bundle(TextBundle::from_section(
+                parent.spawn(TextBundle::from_section(
                     "Jornet Leaderboard Demo",
                     TextStyle {
                         font: asset_server.load("FiraSans-Bold.ttf"),
@@ -108,7 +110,7 @@ mod menu {
                 ));
 
                 parent
-                    .spawn_bundle(NodeBundle {
+                    .spawn(NodeBundle {
                         style: Style {
                             flex_direction: FlexDirection::Row,
                             justify_content: JustifyContent::Center,
@@ -116,53 +118,53 @@ mod menu {
                             margin: UiRect::all(Val::Px(20.0)),
                             ..default()
                         },
-                        color: Color::NONE.into(),
                         ..default()
                     })
                     .with_children(|parent| {
-                        parent
-                            .spawn_bundle(NodeBundle {
+                        parent.spawn((
+                            NodeBundle {
                                 style: Style {
                                     size: Size::new(Val::Px(300.0), Val::Undefined),
-                                    flex_direction: FlexDirection::ColumnReverse,
+                                    flex_direction: FlexDirection::Column,
                                     justify_content: JustifyContent::Center,
                                     align_items: AlignItems::Center,
                                     margin: UiRect::all(Val::Px(20.0)),
                                     ..default()
                                 },
-                                color: Color::NONE.into(),
+
                                 ..default()
-                            })
-                            .insert(LeaderboardMarker::Player);
-                        parent
-                            .spawn_bundle(NodeBundle {
+                            },
+                            LeaderboardMarker::Player,
+                        ));
+                        parent.spawn((
+                            NodeBundle {
                                 style: Style {
                                     size: Size::new(Val::Px(150.0), Val::Undefined),
-                                    flex_direction: FlexDirection::ColumnReverse,
+                                    flex_direction: FlexDirection::Column,
                                     justify_content: JustifyContent::Center,
                                     align_items: AlignItems::Center,
                                     margin: UiRect::all(Val::Px(20.0)),
                                     ..default()
                                 },
-                                color: Color::NONE.into(),
                                 ..default()
-                            })
-                            .insert(LeaderboardMarker::Score);
+                            },
+                            LeaderboardMarker::Score,
+                        ));
                     });
 
                 parent
-                    .spawn_bundle(ButtonBundle {
+                    .spawn(ButtonBundle {
                         style: Style {
                             size: Size::new(Val::Px(150.0), Val::Px(65.0)),
                             justify_content: JustifyContent::Center,
                             align_items: AlignItems::Center,
                             ..default()
                         },
-                        color: Color::hex(BUTTON).unwrap().into(),
+                        background_color: Color::hex(BUTTON).unwrap().into(),
                         ..default()
                     })
                     .with_children(|parent| {
-                        parent.spawn_bundle(TextBundle::from_section(
+                        parent.spawn(TextBundle::from_section(
                             "Play",
                             TextStyle {
                                 font: asset_server.load("FiraSans-Bold.ttf"),
@@ -172,40 +174,39 @@ mod menu {
                         ));
                     });
             });
-        commands
-            .spawn_bundle(
-                TextBundle::from_sections([
-                    TextSection {
-                        value: "you are: ".to_string(),
-                        style: TextStyle {
-                            font: asset_server.load("FiraSans-Bold.ttf"),
-                            font_size: 20.0,
-                            color: Color::hex(TEXT).unwrap(),
-                        },
+        commands.spawn((
+            TextBundle::from_sections([
+                TextSection {
+                    value: "you are: ".to_string(),
+                    style: TextStyle {
+                        font: asset_server.load("FiraSans-Bold.ttf"),
+                        font_size: 20.0,
+                        color: Color::hex(TEXT).unwrap(),
                     },
-                    TextSection {
-                        value: leaderboard
-                            .get_player()
-                            .map(|p| p.name.clone())
-                            .unwrap_or_default(),
-                        style: TextStyle {
-                            font: asset_server.load("FiraSans-Bold.ttf"),
-                            font_size: 25.0,
-                            color: Color::hex(TEXT).unwrap(),
-                        },
+                },
+                TextSection {
+                    value: leaderboard
+                        .get_player()
+                        .map(|p| p.name.clone())
+                        .unwrap_or_default(),
+                    style: TextStyle {
+                        font: asset_server.load("FiraSans-Bold.ttf"),
+                        font_size: 25.0,
+                        color: Color::hex(TEXT).unwrap(),
                     },
-                ])
-                .with_style(Style {
-                    position_type: PositionType::Absolute,
-                    position: UiRect {
-                        left: Val::Px(10.0),
-                        bottom: Val::Px(10.0),
-                        ..default()
-                    },
+                },
+            ])
+            .with_style(Style {
+                position_type: PositionType::Absolute,
+                position: UiRect {
+                    left: Val::Px(10.0),
+                    bottom: Val::Px(10.0),
                     ..default()
-                }),
-            )
-            .insert(PlayerName);
+                },
+                ..default()
+            }),
+            PlayerName,
+        ));
 
         leaderboard.refresh_leaderboard();
     }
@@ -239,7 +240,7 @@ mod menu {
                 commands.entity(root_entity).despawn_descendants();
                 for score in &leaderboard {
                     commands.entity(root_entity).with_children(|parent| {
-                        parent.spawn_bundle(TextBundle::from_section(
+                        parent.spawn(TextBundle::from_section(
                             match marker {
                                 LeaderboardMarker::Score => format!("{} ", score.score),
                                 LeaderboardMarker::Player => score.player.clone(),
@@ -264,7 +265,7 @@ mod menu {
 
     fn button_system(
         mut interaction_query: Query<
-            (&Interaction, &mut UiColor),
+            (&Interaction, &mut BackgroundColor),
             (Changed<Interaction>, With<Button>),
         >,
         mut state: ResMut<State<GameState>>,
@@ -286,6 +287,7 @@ mod menu {
     }
 }
 
+#[derive(Resource)]
 struct GameStatus {
     score: i32,
     time_to_click: Timer,
@@ -330,10 +332,10 @@ mod game {
         });
         commands.insert_resource(GameStatus {
             score: 0,
-            time_to_click: Timer::from_seconds(10.0, false),
+            time_to_click: Timer::from_seconds(10.0, TimerMode::Once),
             since_start: Stopwatch::new(),
         });
-        commands.spawn_bundle(
+        commands.spawn(
             TextBundle::from_section(
                 "0",
                 TextStyle {
@@ -353,7 +355,7 @@ mod game {
                 ..default()
             }),
         );
-        commands.spawn_bundle(NodeBundle {
+        commands.spawn(NodeBundle {
             style: Style {
                 align_self: AlignSelf::FlexEnd,
                 position_type: PositionType::Absolute,
@@ -365,7 +367,7 @@ mod game {
                 size: Size::new(Val::Px(200.0), Val::Px(8.0)),
                 ..default()
             },
-            color: Color::hex(SQUARE).unwrap().into(),
+            background_color: Color::hex(SQUARE).unwrap().into(),
             ..default()
         });
     }
@@ -384,8 +386,8 @@ mod game {
         if rng.gen_bool(time.delta_seconds_f64().min(1.0)) {
             let width = windows.primary().width() / 2.0 - 50.0;
             let height = windows.primary().height() / 2.0 - 50.0;
-            commands
-                .spawn_bundle(SpriteBundle {
+            commands.spawn((
+                SpriteBundle {
                     sprite: Sprite {
                         color: Color::hex(SQUARE).unwrap(),
                         custom_size: Some(Vec2::splat(rng.gen_range(25.0..50.0))),
@@ -397,11 +399,12 @@ mod game {
                         0.0,
                     ),
                     ..default()
-                })
-                .insert(SquareTimer(Timer::from_seconds(
+                },
+                SquareTimer(Timer::from_seconds(
                     rng.gen_range(2.0..10.0),
-                    false,
-                )));
+                    TimerMode::Once,
+                )),
+            ));
         }
         for (entity, mut timer) in &mut squares {
             if timer.0.tick(time.delta()).just_finished() {
@@ -435,7 +438,7 @@ mod game {
                     status.score += 10;
                     status.time_to_click = Timer::from_seconds(
                         10.0 / (status.since_start.elapsed_secs() / 3.0),
-                        false,
+                        TimerMode::Once,
                     );
                 }
             }
@@ -498,20 +501,23 @@ mod done {
         game_status: Res<GameStatus>,
     ) {
         commands
-            .spawn_bundle(NodeBundle {
-                style: Style {
-                    margin: UiRect::all(Val::Auto),
-                    justify_content: JustifyContent::Center,
-                    align_items: AlignItems::Center,
-                    flex_direction: FlexDirection::ColumnReverse,
-                    border: UiRect::all(Val::Px(30.0)),
+            .spawn((
+                NodeBundle {
+                    style: Style {
+                        margin: UiRect::all(Val::Auto),
+                        justify_content: JustifyContent::Center,
+                        align_items: AlignItems::Center,
+                        flex_direction: FlexDirection::Column,
+                        border: UiRect::all(Val::Px(30.0)),
+                        ..default()
+                    },
+                    background_color: Color::hex(BACKGROUND).unwrap().into(),
                     ..default()
                 },
-                color: Color::hex(BACKGROUND).unwrap().into(),
-                ..default()
-            })
+                DoneTimer(Timer::from_seconds(3.0, TimerMode::Once)),
+            ))
             .with_children(|parent| {
-                parent.spawn_bundle(TextBundle::from_section(
+                parent.spawn(TextBundle::from_section(
                     "Your Score",
                     TextStyle {
                         font: asset_server.load("FiraSans-Bold.ttf"),
@@ -519,7 +525,7 @@ mod done {
                         color: Color::hex(TEXT).unwrap(),
                     },
                 ));
-                parent.spawn_bundle(TextBundle::from_section(
+                parent.spawn(TextBundle::from_section(
                     format!("{}", game_status.score),
                     TextStyle {
                         font: asset_server.load("FiraSans-Bold.ttf"),
@@ -527,8 +533,7 @@ mod done {
                         color: Color::hex(TEXT).unwrap(),
                     },
                 ));
-            })
-            .insert(DoneTimer(Timer::from_seconds(3.0, false)));
+            });
     }
 
     fn tick_done(
