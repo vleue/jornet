@@ -3,7 +3,7 @@ use std::sync::{Arc, RwLock};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use bevy::{
-    prelude::{warn, ResMut},
+    prelude::{warn, ResMut, Resource},
     tasks::IoTaskPool,
 };
 use hmac::{Hmac, Mac};
@@ -14,6 +14,7 @@ use uuid::Uuid;
 use crate::http;
 
 /// Leaderboard resource, used to interact with Jornet leaderboard.
+#[derive(Resource)]
 pub struct Leaderboard {
     id: Uuid,
     key: Uuid,
