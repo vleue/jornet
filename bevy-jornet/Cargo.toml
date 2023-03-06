@@ -12,9 +12,7 @@ homepage = "https://jornet.vleue.com"
 documentation = "https://docs.rs/bevy_jornet"
 
 [dependencies.bevy]
-# version = "0.9"
-git = "https://github.com/bevyengine/bevy"
-rev = "30b29deaa9e07cebfd1f1dc5fdeb10318b8c0650"
+version = "0.10"
 default-features = false
 
 [dependencies]
@@ -41,9 +39,7 @@ wasm-bindgen-futures = "0.4"
 js-sys = "0.3"
 
 [dev-dependencies.bevy]
-# version = "0.9"
-git = "https://github.com/bevyengine/bevy"
-rev = "30b29deaa9e07cebfd1f1dc5fdeb10318b8c0650"
+version = "0.10"
 default-features = false
 features = [
     "bevy_winit",
