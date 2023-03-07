@@ -1,3 +1,4 @@
+use base64::{engine::general_purpose::STANDARD, Engine};
 use biscuit_auth::KeyPair;
 
 use clap::{Parser, Subcommand};
@@ -28,9 +29,9 @@ fn main() {
             let root = KeyPair::new();
             let private_key = root.private();
             let output = if dhall {
-                format!("\"{}\"", base64::encode(private_key.to_bytes()))
+                format!("\"{}\"", STANDARD.encode(private_key.to_bytes()))
             } else {
-                base64::encode(private_key.to_bytes())
+                STANDARD.encode(private_key.to_bytes())
             };
             println!("{}", output);
         }

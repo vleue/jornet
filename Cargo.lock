@@ -2437,7 +2437,7 @@ dependencies = [
 name = "jornet-cli"
 version = "0.1.0"
 dependencies = [
- "base64 0.13.1",
+ "base64 0.21.0",
  "biscuit-auth",
  "clap",
 ]
