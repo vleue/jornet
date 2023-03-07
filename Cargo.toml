@@ -1,9 +1,5 @@
 [workspace]
-members = [
-    "jornet-cli",
-    "jornet-server",
-    "bevy-jornet",
-]
+members = ["jornet-cli", "jornet-server", "bevy-jornet"]
 resolver = "2"
 
 [profile.wasm-release]

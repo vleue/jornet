@@ -11,12 +11,12 @@ fn main() {
     App::new()
         .insert_resource(ClearColor(Color::hex(CLEAR).unwrap()))
         .add_plugins(DefaultPlugins.set(WindowPlugin {
-            window: WindowDescriptor {
+            primary_window: Some(Window {
                 title: "Whac-A-Square".to_string(),
                 canvas: Some("#demo-leaderboard".to_string()),
                 fit_canvas_to_parent: true,
                 ..default()
-            },
+            }),
             ..default()
         }))
         .add_plugin(JornetPlugin::with_leaderboard(
@@ -24,18 +24,24 @@ fn main() {
             option_env!("JORNET_LEADERBOARD_KEY").unwrap_or("a797039b-a91d-43e6-8e1c-94f9ca0aa1d6"),
         ))
         .add_startup_system(setup)
-        .add_state(GameState::Menu)
+        .add_state::<GameState>()
         .add_plugin(menu::MenuPlugin)
         .add_plugin(game::GamePlugin)
         .add_plugin(done::DonePlugin)
         .run();
 }
 
-#[derive(Clone, PartialEq, Eq, Debug, Hash)]
+#[derive(Clone, States, PartialEq, Eq, Debug, Hash)]
 enum GameState {
     Game,
     Menu,
     Done,
+}
+
+impl Default for GameState {
+    fn default() -> Self {
+        GameState::Menu
+    }
 }
 
 fn setup(mut commands: Commands, mut leaderboard: ResMut<Leaderboard>) {
@@ -57,13 +63,9 @@ mod menu {
 
     impl Plugin for MenuPlugin {
         fn build(&self, app: &mut App) {
-            app.add_system_set(SystemSet::on_enter(GameState::Menu).with_system(display_menu))
-                .add_system_set(
-                    SystemSet::on_update(GameState::Menu)
-                        .with_system(button_system)
-                        .with_system(display_scores),
-                )
-                .add_system_set(SystemSet::on_exit(GameState::Menu).with_system(despawn_menu));
+            app.add_system(display_menu.in_schedule(OnEnter(GameState::Menu)))
+                .add_systems((button_system, display_scores).in_set(OnUpdate(GameState::Menu)))
+                .add_system(despawn_menu.in_schedule(OnExit(GameState::Menu)));
         }
     }
 
@@ -268,13 +270,13 @@ mod menu {
             (&Interaction, &mut BackgroundColor),
             (Changed<Interaction>, With<Button>),
         >,
-        mut state: ResMut<State<GameState>>,
+        mut state: ResMut<NextState<GameState>>,
     ) {
         for (interaction, mut color) in &mut interaction_query {
             match *interaction {
                 Interaction::Clicked => {
                     *color = (Color::hex(BUTTON).unwrap() + Color::GRAY).into();
-                    let _ = state.set(GameState::Game);
+                    state.set(GameState::Game);
                 }
                 Interaction::Hovered => {
                     *color = (Color::hex(BUTTON).unwrap() + Color::DARK_GRAY).into();
@@ -301,6 +303,7 @@ mod game {
         prelude::*,
         sprite::collide_aabb::collide,
         time::Stopwatch,
+        window::PrimaryWindow,
         winit::{UpdateMode, WinitSettings},
     };
     use bevy_jornet::Leaderboard;
@@ -312,14 +315,11 @@ mod game {
 
     impl Plugin for GamePlugin {
         fn build(&self, app: &mut App) {
-            app.add_system_set(SystemSet::on_enter(GameState::Game).with_system(setup_game))
-                .add_system_set(
-                    SystemSet::on_update(GameState::Game)
-                        .with_system(square_lifecycle)
-                        .with_system(handle_clicks)
-                        .with_system(game_state),
+            app.add_system(setup_game.in_schedule(OnEnter(GameState::Game)))
+                .add_systems(
+                    (square_lifecycle, handle_clicks, game_state).in_set(OnUpdate(GameState::Game)),
                 )
-                .add_system_set(SystemSet::on_exit(GameState::Game).with_system(save_score));
+                .add_system(save_score.in_schedule(OnExit(GameState::Game)));
         }
     }
 
@@ -378,14 +378,17 @@ mod game {
     fn square_lifecycle(
         mut commands: Commands,
         mut status: ResMut<GameStatus>,
-        windows: Res<Windows>,
+        primary_window_query: Query<&Window, With<PrimaryWindow>>,
         time: Res<Time>,
         mut squares: Query<(Entity, &mut SquareTimer)>,
     ) {
+        let Ok(primary_window) = primary_window_query.get_single() else {
+            return;
+        };
         let mut rng = rand::thread_rng();
         if rng.gen_bool(time.delta_seconds_f64().min(1.0)) {
-            let width = windows.primary().width() / 2.0 - 50.0;
-            let height = windows.primary().height() / 2.0 - 50.0;
+            let width = primary_window.width() / 2.0 - 50.0;
+            let height = primary_window.height() / 2.0 - 50.0;
             commands.spawn((
                 SpriteBundle {
                     sprite: Sprite {
@@ -419,12 +422,15 @@ mod game {
         mut status: ResMut<GameStatus>,
         squares: Query<(Entity, &Sprite, &Transform)>,
         mouse_input: Res<Input<MouseButton>>,
-        windows: Res<Windows>,
+        primary_window_query: Query<&Window, With<PrimaryWindow>>,
     ) {
         if mouse_input.get_just_pressed().next().is_some() {
-            let mut clicked_at = windows.primary().cursor_position().unwrap();
-            clicked_at.x -= windows.primary().width() / 2.0;
-            clicked_at.y -= windows.primary().height() / 2.0;
+            let Ok(primary_window) = primary_window_query.get_single() else {
+                return;
+            };
+            let mut clicked_at = primary_window.cursor_position().unwrap();
+            clicked_at.x -= primary_window.width() / 2.0;
+            clicked_at.y -= primary_window.height() / 2.0;
             for (entity, sprite, transform) in &squares {
                 if collide(
                     clicked_at.extend(0.0),
@@ -450,13 +456,13 @@ mod game {
         mut score_text: Query<&mut Text>,
         mut timer: Query<&mut Style, Without<Text>>,
         time: Res<Time>,
-        mut state: ResMut<State<GameState>>,
+        mut state: ResMut<NextState<GameState>>,
     ) {
         score_text.single_mut().sections[0].value = format!("{}", status.score);
         timer.single_mut().size.width = Val::Px(status.time_to_click.percent_left() * 200.0);
         status.since_start.tick(time.delta());
         if status.time_to_click.tick(time.delta()).just_finished() {
-            let _ = state.set(GameState::Done);
+            state.set(GameState::Done);
         }
     }
 
@@ -486,9 +492,9 @@ mod done {
 
     impl Plugin for DonePlugin {
         fn build(&self, app: &mut App) {
-            app.add_system_set(SystemSet::on_enter(GameState::Done).with_system(setup_done))
-                .add_system_set(SystemSet::on_update(GameState::Done).with_system(tick_done))
-                .add_system_set(SystemSet::on_exit(GameState::Done).with_system(clear_done));
+            app.add_system(setup_done.in_schedule(OnEnter(GameState::Done)))
+                .add_system(tick_done.in_set(OnUpdate(GameState::Done)))
+                .add_system(clear_done.in_schedule(OnExit(GameState::Done)));
         }
     }
 
@@ -539,10 +545,10 @@ mod done {
     fn tick_done(
         time: Res<Time>,
         mut timer: Query<&mut DoneTimer>,
-        mut state: ResMut<State<GameState>>,
+        mut state: ResMut<NextState<GameState>>,
     ) {
         if timer.single_mut().0.tick(time.delta()).just_finished() {
-            let _ = state.set(GameState::Menu);
+            state.set(GameState::Menu);
         }
     }
 

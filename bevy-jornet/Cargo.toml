@@ -12,8 +12,7 @@ homepage = "https://jornet.vleue.com"
 documentation = "https://docs.rs/bevy_jornet"
 
 [dependencies.bevy]
-version = "0.9"
-# git = "https://github.com/bevyengine/bevy"
+version = "0.10"
 default-features = false
 
 [dependencies]
@@ -29,15 +28,28 @@ ureq = { version = "2.5", features = ["json"] }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen = { version = "0.2", features = ["serde-serialize"] }
-web-sys = { version = "0.3", features = ["Request", "Window", "Response", "Headers", "RequestInit"] }
+web-sys = { version = "0.3", features = [
+    "Request",
+    "Window",
+    "Response",
+    "Headers",
+    "RequestInit",
+] }
 wasm-bindgen-futures = "0.4"
 js-sys = "0.3"
 
 [dev-dependencies.bevy]
-version = "0.9"
-# git = "https://github.com/bevyengine/bevy"
+version = "0.10"
 default-features = false
-features = ["bevy_winit", "bevy_core_pipeline", "bevy_render", "bevy_sprite", "bevy_text", "bevy_ui", "bevy_asset"]
+features = [
+    "bevy_winit",
+    "bevy_core_pipeline",
+    "bevy_render",
+    "bevy_sprite",
+    "bevy_text",
+    "bevy_ui",
+    "bevy_asset",
+]
 
 [dev-dependencies]
 rand = "0.8"
