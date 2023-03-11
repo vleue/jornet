@@ -13,6 +13,7 @@ use uuid::Uuid;
 
 use crate::http;
 
+/// Bevy Event that is sent when calls to Jornet finish.
 pub enum JornetEvent {
     /// A call to [`send_score`] succeeded.
     SendScoreSuccess,
