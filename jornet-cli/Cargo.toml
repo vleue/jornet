@@ -8,4 +8,4 @@ publish = false
 [dependencies]
 biscuit-auth = "2.2.0"
 base64 = "0.21"
-clap = { version = "4.1", features = ["derive"] }
+clap = { version = "4.2", features = ["derive"] }
