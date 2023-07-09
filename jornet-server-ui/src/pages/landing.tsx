@@ -26,7 +26,7 @@ class BevyIntegration extends Component {
                     Add the plugin, specifying your settings.
                 </div>
                 <SyntaxHighlighter language="rust" style={atomOneDarkReasonable}>
-                    {"app.add_plugin(JornetPlugin::with_leaderboard(id, key));"}
+                    {"app.add_plugins(JornetPlugin::with_leaderboard(id, key));"}
                 </SyntaxHighlighter>
                 <hr />
                 <div>

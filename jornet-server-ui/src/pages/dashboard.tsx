@@ -195,10 +195,10 @@ class DashboardInner extends Component<DashboardProps, DashboardState> {
                                     <div>Here is the code to setup your new leaderboard in Bevy: </div>
                                     <div style={{ display: "flex" }}>
                                         <SyntaxHighlighter language="rust" style={docco} customStyle={{ marginBottom: "0px" }}>
-                                            {"app.add_plugin(JornetPlugin::with_leaderboard(\"" + this.state.new_leaderboard_data.id + "\", \"" + this.state.new_leaderboard_data.key! + "\"));"}
+                                            {"app.add_plugins(JornetPlugin::with_leaderboard(\"" + this.state.new_leaderboard_data.id + "\", \"" + this.state.new_leaderboard_data.key! + "\"));"}
                                         </SyntaxHighlighter>
                                         <ClipboardHelper
-                                            to_copy={"app.add_plugin(JornetPlugin::with_leaderboard(\"" + this.state.new_leaderboard_data?.id! + "\", \"" + this.state.new_leaderboard_data?.key! + "\"));"}
+                                            to_copy={"app.add_plugins(JornetPlugin::with_leaderboard(\"" + this.state.new_leaderboard_data?.id! + "\", \"" + this.state.new_leaderboard_data?.key! + "\"));"}
                                             style={{ marginTop: "0.5rem" }}
                                         />
                                     </div>
