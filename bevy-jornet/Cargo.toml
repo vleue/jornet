@@ -49,6 +49,7 @@ features = [
     "bevy_text",
     "bevy_ui",
     "bevy_asset",
+    "webgl2",
 ]
 
 [dev-dependencies]
