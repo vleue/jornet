@@ -19,7 +19,7 @@ class BevyIntegration extends Component {
                     Add the dependency.
                 </div>
                 <SyntaxHighlighter language="toml" style={atomOneDarkReasonable}>
-                    bevy_jornet = "0.1"
+                    bevy_jornet = "0.5"
                 </SyntaxHighlighter>
                 <hr />
                 <div>
