@@ -104,13 +104,13 @@ impl AdminAccount {
         .is_ok()
     }
     pub fn create_biscuit(&self, root: &KeyPair) -> Biscuit {
-        let mut builder = Biscuit::builder(root);
+        let mut builder = Biscuit::builder();
         builder
-            .add_authority_fact(AdminAccount { id: self.id }.as_biscuit_fact())
+            .add_fact(AdminAccount { id: self.id }.as_biscuit_fact())
             .unwrap();
 
         builder
-            .add_authority_check(
+            .add_check(
                 format!(
                     r#"check if time($time), $time < {}"#,
                     (OffsetDateTime::now_utc() + Duration::seconds(TOKEN_TTL))
@@ -121,7 +121,7 @@ impl AdminAccount {
             )
             .unwrap();
 
-        builder.build().unwrap()
+        builder.build(root).unwrap()
     }
 }
 
