@@ -50,14 +50,17 @@ jobs:
           JORNET_LEADERBOARD_ID: ${{ secrets.JORNET_LEADERBOARD_ID }}
           JORNET_LEADERBOARD_KEY: ${{ secrets.JORNET_LEADERBOARD_KEY }}
 
-      - name: remove Bevy plugin
+      - name: remove other crates to reduce dependencies
         run: |
           rm -rf bevy-jornet
+          rm -rf jornet-cli
           cargo new --lib bevy-jornet
+          cargo new --lib jornet-cli
           cargo update
           git add bevy-jornet
+          git add jornet-cli
           git add Cargo.lock
-          git commit --message "remove Bevy plugin"
+          git commit --message "remove other crates"
 
       - name: build front
         run: |
