@@ -1856,7 +1856,7 @@ dependencies = [
  "abnf_to_pest",
  "annotate-snippets",
  "elsa",
- "half 2.3.1",
+ "half 2.2.1",
  "hex",
  "home",
  "itertools 0.10.5",
@@ -2425,11 +2425,10 @@ checksum = "eabb4a44450da02c90444cf74558da904edde8fb4e9035a9a6a4e15445af0bd7"
 
 [[package]]
 name = "half"
-version = "2.3.1"
+version = "2.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc52e53916c08643f1b56ec082790d1e86a32e58dc5268f897f313fbae7b4872"
+checksum = "02b4af3693f1b705df946e9fe5631932443781d0aabb423b62fcd4d73f6d2fd0"
 dependencies = [
- "cfg-if",
  "crunchy",
 ]
 
