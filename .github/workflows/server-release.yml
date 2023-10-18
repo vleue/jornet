@@ -53,8 +53,8 @@ jobs:
       - name: remove other crates to reduce dependencies
         run: |
           rm -rf bevy-jornet
-          rm -rf jornet-cli
           cargo new --lib bevy-jornet
+          rm -rf jornet-cli
           cargo new --lib jornet-cli
           cargo update -p bevy-jornet
           cargo update -p jornet-cli
