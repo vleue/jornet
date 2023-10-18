@@ -56,8 +56,7 @@ jobs:
           cargo new --lib bevy-jornet
           rm -rf jornet-cli
           cargo new --lib jornet-cli
-          cargo update -p bevy-jornet
-          cargo update -p jornet-cli
+          cargo update --workspace
           git add bevy-jornet
           git add jornet-cli
           git add Cargo.lock
