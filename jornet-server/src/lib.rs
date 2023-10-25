@@ -3,7 +3,7 @@ use std::{net::TcpListener, path::PathBuf, str::FromStr};
 use actix_files::NamedFile;
 use actix_web::{
     dev::Server,
-    middleware::Logger,
+    middleware::{Compress, Logger},
     web::{self, Data},
     App, HttpRequest, HttpServer, Result,
 };
@@ -37,6 +37,7 @@ pub fn run(listener: TcpListener, connection_pool: PgPool) -> Result<Server, std
             .app_data(root.clone())
             .app_data(config.clone())
             .wrap(Logger::default())
+            .wrap(Compress::default())
             .route(
                 "/health_check",
                 web::get().to(domains::healthcheck::health_check),
