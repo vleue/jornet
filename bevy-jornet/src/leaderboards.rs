@@ -3,7 +3,8 @@ use std::sync::{Arc, RwLock};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use bevy::{
-    prelude::{warn, ResMut, Resource},
+    log::warn,
+    prelude::{ResMut, Resource},
     tasks::IoTaskPool,
 };
 use hmac::{Hmac, Mac};

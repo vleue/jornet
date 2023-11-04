@@ -77,7 +77,7 @@ mod menu {
     ) {
         commands.insert_resource(WinitSettings {
             focused_mode: UpdateMode::Reactive {
-                max_wait: Duration::from_secs_f32(0.5),
+                wait: Duration::from_secs_f32(0.5),
             },
             ..WinitSettings::desktop_app()
         });
@@ -326,7 +326,7 @@ mod game {
     fn setup_game(mut commands: Commands, asset_server: Res<AssetServer>) {
         commands.insert_resource(WinitSettings {
             focused_mode: UpdateMode::Reactive {
-                max_wait: Duration::from_secs_f32(0.05),
+                wait: Duration::from_secs_f32(0.05),
             },
             ..WinitSettings::desktop_app()
         });
