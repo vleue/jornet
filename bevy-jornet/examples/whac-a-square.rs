@@ -14,7 +14,6 @@ fn main() {
             primary_window: Some(Window {
                 title: "Whac-A-Square".to_string(),
                 canvas: Some("#demo-leaderboard".to_string()),
-                fit_canvas_to_parent: true,
                 ..default()
             }),
             ..default()
@@ -24,7 +23,7 @@ fn main() {
             option_env!("JORNET_LEADERBOARD_KEY").unwrap_or("a797039b-a91d-43e6-8e1c-94f9ca0aa1d6"),
         ))
         .add_systems(Startup, setup)
-        .add_state::<GameState>()
+        .init_state::<GameState>()
         .add_plugins((menu::MenuPlugin, game::GamePlugin, done::DonePlugin))
         .run();
 }
@@ -299,8 +298,8 @@ mod game {
     use std::time::Duration;
 
     use bevy::{
+        math::bounding::{Aabb2d, IntersectsVolume},
         prelude::*,
-        sprite::collide_aabb::collide,
         time::Stopwatch,
         window::PrimaryWindow,
         winit::{UpdateMode, WinitSettings},
@@ -416,7 +415,7 @@ mod game {
         mut commands: Commands,
         mut status: ResMut<GameStatus>,
         squares: Query<(Entity, &Sprite, &Transform)>,
-        mouse_input: Res<Input<MouseButton>>,
+        mouse_input: Res<ButtonInput<MouseButton>>,
         primary_window_query: Query<&Window, With<PrimaryWindow>>,
     ) {
         if mouse_input.get_just_pressed().next().is_some() {
@@ -427,14 +426,10 @@ mod game {
             clicked_at.x -= primary_window.width() / 2.0;
             clicked_at.y = -1.0 * (clicked_at.y - primary_window.height() / 2.0);
             for (entity, sprite, transform) in &squares {
-                if collide(
-                    clicked_at.extend(0.0),
-                    Vec2::ONE,
-                    transform.translation,
-                    sprite.custom_size.unwrap(),
-                )
-                .is_some()
-                {
+                if Aabb2d::new(clicked_at, Vec2::ONE).intersects(&Aabb2d::new(
+                    transform.translation.truncate(),
+                    sprite.custom_size.unwrap() / 2.,
+                )) {
                     commands.entity(entity).despawn();
                     status.score += 10;
                     status.time_to_click = Timer::from_seconds(
@@ -454,7 +449,7 @@ mod game {
         mut state: ResMut<NextState<GameState>>,
     ) {
         score_text.single_mut().sections[0].value = format!("{}", status.score);
-        timer.single_mut().width = Val::Px(status.time_to_click.percent_left() * 200.0);
+        timer.single_mut().width = Val::Px(status.time_to_click.fraction_remaining() * 200.0);
         status.since_start.tick(time.delta());
         if status.time_to_click.tick(time.delta()).just_finished() {
             state.set(GameState::Done);
