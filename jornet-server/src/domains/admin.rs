@@ -36,7 +36,7 @@ impl BiscuitFact for AdminAccount {
     fn from_authorizer(authorizer: &mut Authorizer) -> Option<Self> {
         let res: Vec<(String,)> = authorizer.query("data($id) <- user($id)").ok()?;
         Some(AdminAccount {
-            id: Uuid::parse_str(res.get(0)?.0.as_str()).ok()?,
+            id: Uuid::parse_str(res.first()?.0.as_str()).ok()?,
         })
     }
 }
