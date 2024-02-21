@@ -4,7 +4,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use bevy::{
     log::warn,
-    prelude::{ResMut, Resource},
+    prelude::{Event, EventWriter, ResMut, Resource},
     tasks::IoTaskPool,
 };
 use hmac::{Hmac, Mac};
@@ -14,6 +14,22 @@ use uuid::Uuid;
 
 use crate::http;
 
+/// Bevy Event that is sent when calls to Jornet finish.
+#[derive(Clone, Copy, PartialEq, Eq, Event, Debug)]
+pub enum JornetEvent {
+    /// A call to [`send_score`] succeeded.
+    SendScoreSuccess,
+    /// A Call to [`send_score`] failed.
+    SendScoreFailure,
+    /// A call to [`create_player`] succeeded.
+    CreatePlayerSuccess,
+    /// A call to [`create_player`] failed.
+    CreatePlayerFailure,
+    /// A call to [`refresh_leaderboard`] succeeded.
+    RefreshLeaderboardSuccess,
+    /// A call to [`refresh_leaderbord`] failed.
+    RefreshLeaderboardFailure,
+}
 /// Leaderboard resource, used to interact with Jornet leaderboard.
 #[derive(Resource)]
 pub struct Leaderboard {
@@ -21,6 +37,7 @@ pub struct Leaderboard {
     key: Uuid,
     leaderboard: Vec<Score>,
     updating: Arc<RwLock<Vec<Score>>>,
+    events: Arc<RwLock<Vec<JornetEvent>>>,
     host: String,
     new_player: Arc<RwLock<Option<Player>>>,
     player: Option<Player>,
@@ -34,6 +51,7 @@ impl Leaderboard {
             leaderboard: Default::default(),
             updating: Default::default(),
             host: host.unwrap_or_else(|| "https://jornet.vleue.com".to_string()),
+            events: Default::default(),
             new_player: Default::default(),
             player: Default::default(),
         }
@@ -54,18 +72,30 @@ impl Leaderboard {
     pub fn create_player(&mut self, name: Option<&str>) {
         let thread_pool = IoTaskPool::get();
         let host = self.host.clone();
+        let events = self.events.clone();
 
-        let player = PlayerInput {
+        let player_input = PlayerInput {
             name: name.map(|n| n.to_string()),
         };
         let complete_player = self.new_player.clone();
 
         thread_pool
             .spawn(async move {
-                if let Some(player) = http::post(&format!("{}/api/v1/players", host), player).await
+                if let Some(player) =
+                    http::post(&format!("{}/api/v1/players", host), player_input.clone()).await
                 {
+                    (*events)
+                        .write()
+                        .unwrap()
+                        .push(JornetEvent::CreatePlayerSuccess);
+
                     *complete_player.write().unwrap() = Some(player);
                 } else {
+                    (*events)
+                        .write()
+                        .unwrap()
+                        .push(JornetEvent::CreatePlayerFailure);
+
                     warn!("error creating a player");
                 }
             })
@@ -95,6 +125,7 @@ impl Leaderboard {
         let thread_pool = IoTaskPool::get();
         let leaderboard_id = self.id;
         let host = self.host.clone();
+        let events = self.events.clone();
 
         if let Some(player) = self.player.as_ref() {
             let score_to_send = ScoreInput::new(self.key, score, player, meta);
@@ -102,12 +133,22 @@ impl Leaderboard {
                 .spawn(async move {
                     if http::post::<_, ()>(
                         &format!("{}/api/v1/scores/{}", host, leaderboard_id),
-                        score_to_send,
+                        score_to_send.clone(),
                     )
                     .await
                     .is_none()
                     {
+                        (*events)
+                            .write()
+                            .unwrap()
+                            .push(JornetEvent::SendScoreFailure);
+
                         warn!("error sending the score");
+                    } else {
+                        (*events)
+                            .write()
+                            .unwrap()
+                            .push(JornetEvent::SendScoreSuccess);
                     }
                 })
                 .detach();
@@ -126,6 +167,7 @@ impl Leaderboard {
         let thread_pool = IoTaskPool::get();
         let leaderboard_id = self.id;
         let host = self.host.clone();
+        let events = self.events.clone();
 
         let leaderboard_to_update = self.updating.clone();
 
@@ -135,8 +177,18 @@ impl Leaderboard {
                     http::get(&format!("{}/api/v1/scores/{}", host, leaderboard_id)).await
                 {
                     *leaderboard_to_update.write().unwrap() = scores;
+
+                    (*events)
+                        .write()
+                        .unwrap()
+                        .push(JornetEvent::RefreshLeaderboardSuccess);
                 } else {
                     warn!("error getting the leaderboard");
+
+                    (*events)
+                        .write()
+                        .unwrap()
+                        .push(JornetEvent::RefreshLeaderboardFailure);
                 }
             })
             .detach();
@@ -208,7 +260,7 @@ pub struct Score {
     pub timestamp: String,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Clone)]
 struct ScoreInput {
     pub score: f32,
     pub player: Uuid,
@@ -261,4 +313,21 @@ pub struct Player {
 #[derive(Serialize, Debug, Clone)]
 struct PlayerInput {
     name: Option<String>,
+}
+
+/// System to send bevy events for results from any tasks.
+/// It is automatically added by the [`JornetPlugin`](crate::JornetPlugin) in stage
+/// [`CoreStage::Update`](bevy::prelude::CoreStage).
+pub fn send_events(leaderboard: ResMut<Leaderboard>, mut event_writer: EventWriter<JornetEvent>) {
+    if !leaderboard
+        .events
+        .try_read()
+        .map(|v| v.is_empty())
+        .unwrap_or(true)
+    {
+        let mut events = leaderboard.events.write().unwrap();
+        for event in events.drain(..) {
+            event_writer.send(event);
+        }
+    }
 }
