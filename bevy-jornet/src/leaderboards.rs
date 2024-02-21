@@ -4,7 +4,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use bevy::{
     log::warn,
-    prelude::{EventWriter, ResMut, Resource},
+    prelude::{Event, EventWriter, ResMut, Resource},
     tasks::IoTaskPool,
 };
 use hmac::{Hmac, Mac};
