@@ -12,7 +12,7 @@ pub async fn validator(
     credentials: BearerAuth,
 ) -> Result<ServiceRequest, (Error, ServiceRequest)> {
     let root = req.app_data::<web::Data<KeyPair>>().unwrap();
-    if let Some(user) = Biscuit::from_base64(credentials.token(), |_| root.public())
+    if let Some(user) = Biscuit::from_base64(credentials.token(), |_| Ok(root.public()))
         .ok()
         .and_then(|biscuit| authorize(&biscuit))
     {

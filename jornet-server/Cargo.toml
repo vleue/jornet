@@ -1,6 +1,6 @@
 [package]
 name = "jornet-server"
-version = "0.1.34"
+version = "0.1.40"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 publish = false
@@ -10,7 +10,7 @@ actix-web = "4.1"
 actix-web-httpauth = "0.8"
 actix-files = "0.6"
 actix-cors = "0.6"
-biscuit-auth = "2.2"
+biscuit-auth = "4.0"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_dhall = "0.12"
@@ -24,16 +24,9 @@ hex = "0.4"
 rand = "0.8"
 
 [dependencies.sqlx]
-version = "0.6"
+version = "0.7"
 default-features = false
-features = [
-    "runtime-actix-rustls",
-    "macros",
-    "postgres",
-    "uuid",
-    "time",
-]
+features = ["runtime-tokio-rustls", "macros", "postgres", "uuid", "time"]
 
 [dev-dependencies]
-sqlx = { version = "0.6", default-features = false, features = ["migrate"] }
-
+sqlx = { version = "0.7", default-features = false, features = ["migrate"] }

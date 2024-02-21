@@ -53,7 +53,7 @@ impl Settings {
             .as_ref()
             .and_then(|pk_string| STANDARD.decode(pk_string).ok())
             .and_then(|pk_bytes| PrivateKey::from_bytes(&pk_bytes).ok())
-            .map(KeyPair::from)
-            .unwrap_or_else(KeyPair::new)
+            .map(|kp| KeyPair::from(&kp))
+            .unwrap_or_default()
     }
 }

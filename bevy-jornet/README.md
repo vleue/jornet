@@ -9,7 +9,7 @@
 Add this crate as a dependency, then add the plugin. You cna get an `id` and a `key` at https://jornet.vleue.com. The key must remain secret.
 
 ```rust
-app.add_plugin(JornetPlugin::with_leaderboard(id, key));
+app.add_plugins(JornetPlugin::with_leaderboard(id, key));
 ```
 
 You can then create a new player to send scores, or retrieve the current leaderboard:

@@ -29,11 +29,11 @@ jobs:
       SQLX_FEATURES: postgres
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Cache dependencies
         id: cache-dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ~/.cargo/registry
@@ -41,15 +41,10 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
+      - uses: dtolnay/rust-toolchain@stable
 
       - name: Cache sqlx-cli
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         id: cache-sqlx
         with:
           path: |
@@ -58,16 +53,8 @@ jobs:
           key: ${{ runner.os }}-sqlx-${{ env.SQLX_VERSION }}-${{ env.SQLX_FEATURES }}
 
       - name: Install sqlx-cli 
-        uses: actions-rs/cargo@v1
         if: steps.cache-sqlx.outputs.cache-hit == false
-        with:
-          command: install 
-          args: >
-            sqlx-cli
-            --force
-            --version=${{ env.SQLX_VERSION }}
-            --features=${{ env.SQLX_FEATURES }}
-            --locked
+        run: cargo install sqlx-cli --force --version=${{ env.SQLX_VERSION }} --features=${{ env.SQLX_FEATURES }} --locked
 
       - name: Migrate database
         run: |
@@ -84,16 +71,10 @@ jobs:
     name: Rust format
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
-          components: rustfmt
-      - uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: run cargo fmt
+        run: cargo fmt --all -- --check
 
   rust-clippy:
     name: Clippy
@@ -112,17 +93,12 @@ jobs:
       SQLX_FEATURES: postgres
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          components: clippy
-          override: true
+      - uses: dtolnay/rust-toolchain@stable
 
       - name: Cache sqlx-cli
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         id: cache-sqlx
         with:
           path: |
@@ -130,16 +106,8 @@ jobs:
           key: ${{ runner.os }}-sqlx-${{ env.SQLX_VERSION }}-${{ env.SQLX_FEATURES }}
 
       - name: Install sqlx-cli 
-        uses: actions-rs/cargo@v1
         if: steps.cache-sqlx.outputs.cache-hit == false
-        with:
-          command: install 
-          args: >
-            sqlx-cli
-            --force
-            --version=${{ env.SQLX_VERSION }}
-            --features=${{ env.SQLX_FEATURES }}
-            --locked
+        run: cargo install sqlx-cli --force --version=${{ env.SQLX_VERSION }} --features=${{ env.SQLX_FEATURES }} --locked
 
       - name: Migrate database
         run: |
@@ -156,7 +124,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: build
         run: |

@@ -42,7 +42,7 @@ async fn request<B: Serialize, R: DeserializeOwned>(url: &str, body: Option<B>) 
                 &serde_json::to_string(&body).unwrap(),
             )))
             // building headers - can't fail
-            .headers(&JsValue::from_serde(&headers).unwrap());
+            .headers(&serde_wasm_bindgen::to_value(&headers).unwrap());
     }
 
     // building the request - can't fail
@@ -61,5 +61,5 @@ async fn request<B: Serialize, R: DeserializeOwned>(url: &str, body: Option<B>) 
         .ok()
         .and_then(|value|
             // can fail if value is not of the correct type
-            value.into_serde().ok())
+            serde_wasm_bindgen::from_value(value).ok())
 }

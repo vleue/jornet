@@ -19,14 +19,14 @@ class BevyIntegration extends Component {
                     Add the dependency.
                 </div>
                 <SyntaxHighlighter language="toml" style={atomOneDarkReasonable}>
-                    bevy_jornet = "0.1"
+                    bevy_jornet = "0.7"
                 </SyntaxHighlighter>
                 <hr />
                 <div>
                     Add the plugin, specifying your settings.
                 </div>
                 <SyntaxHighlighter language="rust" style={atomOneDarkReasonable}>
-                    {"app.add_plugin(JornetPlugin::with_leaderboard(id, key));"}
+                    {"app.add_plugins(JornetPlugin::with_leaderboard(id, key));"}
                 </SyntaxHighlighter>
                 <hr />
                 <div>

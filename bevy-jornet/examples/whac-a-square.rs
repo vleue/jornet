@@ -14,20 +14,17 @@ fn main() {
             primary_window: Some(Window {
                 title: "Whac-A-Square".to_string(),
                 canvas: Some("#demo-leaderboard".to_string()),
-                fit_canvas_to_parent: true,
                 ..default()
             }),
             ..default()
         }))
-        .add_plugin(JornetPlugin::with_leaderboard(
+        .add_plugins(JornetPlugin::with_leaderboard(
             option_env!("JORNET_LEADERBOARD_ID").unwrap_or("a920de64-3bdb-4f8e-87a8-e7bf20f00f81"),
             option_env!("JORNET_LEADERBOARD_KEY").unwrap_or("a797039b-a91d-43e6-8e1c-94f9ca0aa1d6"),
         ))
-        .add_startup_system(setup)
-        .add_state::<GameState>()
-        .add_plugin(menu::MenuPlugin)
-        .add_plugin(game::GamePlugin)
-        .add_plugin(done::DonePlugin)
+        .add_systems(Startup, setup)
+        .init_state::<GameState>()
+        .add_plugins((menu::MenuPlugin, game::GamePlugin, done::DonePlugin))
         .run();
 }
 
@@ -63,9 +60,12 @@ mod menu {
 
     impl Plugin for MenuPlugin {
         fn build(&self, app: &mut App) {
-            app.add_system(display_menu.in_schedule(OnEnter(GameState::Menu)))
-                .add_systems((button_system, display_scores).in_set(OnUpdate(GameState::Menu)))
-                .add_system(despawn_menu.in_schedule(OnExit(GameState::Menu)));
+            app.add_systems(OnEnter(GameState::Menu), display_menu)
+                .add_systems(
+                    Update,
+                    (button_system, display_scores).run_if(in_state(GameState::Menu)),
+                )
+                .add_systems(OnExit(GameState::Menu), despawn_menu);
         }
     }
 
@@ -76,7 +76,7 @@ mod menu {
     ) {
         commands.insert_resource(WinitSettings {
             focused_mode: UpdateMode::Reactive {
-                max_wait: Duration::from_secs_f32(0.5),
+                wait: Duration::from_secs_f32(0.5),
             },
             ..WinitSettings::desktop_app()
         });
@@ -126,7 +126,7 @@ mod menu {
                         parent.spawn((
                             NodeBundle {
                                 style: Style {
-                                    size: Size::new(Val::Px(300.0), Val::Undefined),
+                                    width: Val::Px(300.0),
                                     flex_direction: FlexDirection::Column,
                                     justify_content: JustifyContent::Center,
                                     align_items: AlignItems::Center,
@@ -141,7 +141,7 @@ mod menu {
                         parent.spawn((
                             NodeBundle {
                                 style: Style {
-                                    size: Size::new(Val::Px(150.0), Val::Undefined),
+                                    width: Val::Px(150.0),
                                     flex_direction: FlexDirection::Column,
                                     justify_content: JustifyContent::Center,
                                     align_items: AlignItems::Center,
@@ -157,7 +157,8 @@ mod menu {
                 parent
                     .spawn(ButtonBundle {
                         style: Style {
-                            size: Size::new(Val::Px(150.0), Val::Px(65.0)),
+                            width: Val::Px(150.0),
+                            height: Val::Px(65.0),
                             justify_content: JustifyContent::Center,
                             align_items: AlignItems::Center,
                             ..default()
@@ -200,11 +201,8 @@ mod menu {
             ])
             .with_style(Style {
                 position_type: PositionType::Absolute,
-                position: UiRect {
-                    left: Val::Px(10.0),
-                    bottom: Val::Px(10.0),
-                    ..default()
-                },
+                left: Val::Px(10.0),
+                bottom: Val::Px(10.0),
                 ..default()
             }),
             PlayerName,
@@ -274,7 +272,7 @@ mod menu {
     ) {
         for (interaction, mut color) in &mut interaction_query {
             match *interaction {
-                Interaction::Clicked => {
+                Interaction::Pressed => {
                     *color = (Color::hex(BUTTON).unwrap() + Color::GRAY).into();
                     state.set(GameState::Game);
                 }
@@ -300,8 +298,8 @@ mod game {
     use std::time::Duration;
 
     use bevy::{
+        math::bounding::{Aabb2d, IntersectsVolume},
         prelude::*,
-        sprite::collide_aabb::collide,
         time::Stopwatch,
         window::PrimaryWindow,
         winit::{UpdateMode, WinitSettings},
@@ -315,18 +313,19 @@ mod game {
 
     impl Plugin for GamePlugin {
         fn build(&self, app: &mut App) {
-            app.add_system(setup_game.in_schedule(OnEnter(GameState::Game)))
+            app.add_systems(OnEnter(GameState::Game), setup_game)
                 .add_systems(
-                    (square_lifecycle, handle_clicks, game_state).in_set(OnUpdate(GameState::Game)),
+                    Update,
+                    (square_lifecycle, handle_clicks, game_state).run_if(in_state(GameState::Game)),
                 )
-                .add_system(save_score.in_schedule(OnExit(GameState::Game)));
+                .add_systems(OnExit(GameState::Game), save_score);
         }
     }
 
     fn setup_game(mut commands: Commands, asset_server: Res<AssetServer>) {
         commands.insert_resource(WinitSettings {
             focused_mode: UpdateMode::Reactive {
-                max_wait: Duration::from_secs_f32(0.05),
+                wait: Duration::from_secs_f32(0.05),
             },
             ..WinitSettings::desktop_app()
         });
@@ -347,11 +346,8 @@ mod game {
             .with_style(Style {
                 align_self: AlignSelf::FlexEnd,
                 position_type: PositionType::Absolute,
-                position: UiRect {
-                    top: Val::Px(10.0),
-                    left: Val::Px(15.0),
-                    ..default()
-                },
+                top: Val::Px(10.0),
+                left: Val::Px(15.0),
                 ..default()
             }),
         );
@@ -359,12 +355,10 @@ mod game {
             style: Style {
                 align_self: AlignSelf::FlexEnd,
                 position_type: PositionType::Absolute,
-                position: UiRect {
-                    top: Val::Px(0.0),
-                    left: Val::Px(15.0),
-                    ..default()
-                },
-                size: Size::new(Val::Px(200.0), Val::Px(8.0)),
+                top: Val::Px(0.0),
+                left: Val::Px(15.0),
+                width: Val::Px(200.0),
+                height: Val::Px(8.0),
                 ..default()
             },
             background_color: Color::hex(SQUARE).unwrap().into(),
@@ -421,7 +415,7 @@ mod game {
         mut commands: Commands,
         mut status: ResMut<GameStatus>,
         squares: Query<(Entity, &Sprite, &Transform)>,
-        mouse_input: Res<Input<MouseButton>>,
+        mouse_input: Res<ButtonInput<MouseButton>>,
         primary_window_query: Query<&Window, With<PrimaryWindow>>,
     ) {
         if mouse_input.get_just_pressed().next().is_some() {
@@ -430,16 +424,12 @@ mod game {
             };
             let mut clicked_at = primary_window.cursor_position().unwrap();
             clicked_at.x -= primary_window.width() / 2.0;
-            clicked_at.y -= primary_window.height() / 2.0;
+            clicked_at.y = -1.0 * (clicked_at.y - primary_window.height() / 2.0);
             for (entity, sprite, transform) in &squares {
-                if collide(
-                    clicked_at.extend(0.0),
-                    Vec2::ONE,
-                    transform.translation,
-                    sprite.custom_size.unwrap(),
-                )
-                .is_some()
-                {
+                if Aabb2d::new(clicked_at, Vec2::ONE).intersects(&Aabb2d::new(
+                    transform.translation.truncate(),
+                    sprite.custom_size.unwrap() / 2.,
+                )) {
                     commands.entity(entity).despawn();
                     status.score += 10;
                     status.time_to_click = Timer::from_seconds(
@@ -459,7 +449,7 @@ mod game {
         mut state: ResMut<NextState<GameState>>,
     ) {
         score_text.single_mut().sections[0].value = format!("{}", status.score);
-        timer.single_mut().size.width = Val::Px(status.time_to_click.percent_left() * 200.0);
+        timer.single_mut().width = Val::Px(status.time_to_click.fraction_remaining() * 200.0);
         status.since_start.tick(time.delta());
         if status.time_to_click.tick(time.delta()).just_finished() {
             state.set(GameState::Done);
@@ -492,9 +482,9 @@ mod done {
 
     impl Plugin for DonePlugin {
         fn build(&self, app: &mut App) {
-            app.add_system(setup_done.in_schedule(OnEnter(GameState::Done)))
-                .add_system(tick_done.in_set(OnUpdate(GameState::Done)))
-                .add_system(clear_done.in_schedule(OnExit(GameState::Done)));
+            app.add_systems(OnEnter(GameState::Done), setup_done)
+                .add_systems(Update, tick_done.run_if(in_state(GameState::Done)))
+                .add_systems(OnExit(GameState::Done), clear_done);
         }
     }
 
