@@ -75,7 +75,7 @@ jobs:
         run: |
           git push --force origin release-clever
 
-      - uses: 47ng/actions-clever-cloud@v1.3.1
+      - uses: 47ng/actions-clever-cloud@v2.0.0
         with:
           appID: app_451f9750-246e-4649-b419-7f3888fa2c69
           force: true
