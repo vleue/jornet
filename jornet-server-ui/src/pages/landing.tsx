@@ -49,7 +49,7 @@ class BevyIntegration extends Component {
                 </SyntaxHighlighter>
                 <hr />
                 <div>
-                    Refresh the leaderboard. This is asynchrone. The Leaderboard resource will be marked as changed once it has been refreshed.
+                    Refresh the leaderboard. This is asynchronous. The Leaderboard resource will be marked as changed once it has been refreshed.
                 </div>
                 <SyntaxHighlighter language="rust" style={atomOneDarkReasonable}>
                     {"fn refresh_leaderboard(leaderboard: Res<Leaderboard>) {\n\
