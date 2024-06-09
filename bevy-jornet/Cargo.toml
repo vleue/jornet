@@ -1,6 +1,6 @@
 [package]
 name = "bevy_jornet"
-version = "0.7.0"
+version = "0.8.0-rc.2"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 description = "Bevy plugin for Jornet - a social game server"
