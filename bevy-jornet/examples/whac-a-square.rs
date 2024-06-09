@@ -9,7 +9,7 @@ use bevy_jornet::{JornetPlugin, Leaderboard};
 
 fn main() {
     App::new()
-        .insert_resource(ClearColor(Color::hex(CLEAR).unwrap()))
+        .insert_resource(ClearColor(Color::Srgba(Srgba::hex(CLEAR).unwrap())))
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
                 title: "Whac-A-Square".to_string(),
@@ -50,6 +50,7 @@ mod menu {
     use std::{cmp::Ordering, time::Duration};
 
     use bevy::{
+        color::palettes,
         prelude::*,
         winit::{UpdateMode, WinitSettings},
     };
@@ -75,9 +76,7 @@ mod menu {
         leaderboard: Res<Leaderboard>,
     ) {
         commands.insert_resource(WinitSettings {
-            focused_mode: UpdateMode::Reactive {
-                wait: Duration::from_secs_f32(0.5),
-            },
+            focused_mode: UpdateMode::reactive(Duration::from_secs_f32(0.5)),
             ..WinitSettings::desktop_app()
         });
         commands
@@ -90,7 +89,7 @@ mod menu {
                     border: UiRect::all(Val::Px(30.0)),
                     ..default()
                 },
-                background_color: Color::hex(BACKGROUND).unwrap().into(),
+                background_color: Color::Srgba(Srgba::hex(BACKGROUND).unwrap()).into(),
                 ..default()
             })
             .with_children(|parent| {
@@ -99,7 +98,7 @@ mod menu {
                     TextStyle {
                         font: asset_server.load("FiraSans-Bold.ttf"),
                         font_size: 60.0,
-                        color: Color::hex(TEXT).unwrap(),
+                        color: Color::Srgba(Srgba::hex(TEXT).unwrap()),
                     },
                 ));
                 parent.spawn(TextBundle::from_section(
@@ -107,7 +106,7 @@ mod menu {
                     TextStyle {
                         font: asset_server.load("FiraSans-Bold.ttf"),
                         font_size: 35.0,
-                        color: Color::hex(TEXT).unwrap(),
+                        color: Color::Srgba(Srgba::hex(TEXT).unwrap()),
                     },
                 ));
 
@@ -161,9 +160,11 @@ mod menu {
                             height: Val::Px(65.0),
                             justify_content: JustifyContent::Center,
                             align_items: AlignItems::Center,
+
                             ..default()
                         },
-                        background_color: Color::hex(BUTTON).unwrap().into(),
+                        image: UiImage::default()
+                            .with_color(Color::Srgba(Srgba::hex(BUTTON).unwrap())),
                         ..default()
                     })
                     .with_children(|parent| {
@@ -172,7 +173,7 @@ mod menu {
                             TextStyle {
                                 font: asset_server.load("FiraSans-Bold.ttf"),
                                 font_size: 40.0,
-                                color: Color::hex(TEXT).unwrap(),
+                                color: Color::Srgba(Srgba::hex(TEXT).unwrap()),
                             },
                         ));
                     });
@@ -184,7 +185,7 @@ mod menu {
                     style: TextStyle {
                         font: asset_server.load("FiraSans-Bold.ttf"),
                         font_size: 20.0,
-                        color: Color::hex(TEXT).unwrap(),
+                        color: Color::Srgba(Srgba::hex(TEXT).unwrap()),
                     },
                 },
                 TextSection {
@@ -195,7 +196,7 @@ mod menu {
                     style: TextStyle {
                         font: asset_server.load("FiraSans-Bold.ttf"),
                         font_size: 25.0,
-                        color: Color::hex(TEXT).unwrap(),
+                        color: Color::Srgba(Srgba::hex(TEXT).unwrap()),
                     },
                 },
             ])
@@ -248,7 +249,7 @@ mod menu {
                             TextStyle {
                                 font: asset_server.load("FiraSans-Bold.ttf"),
                                 font_size: 30.0,
-                                color: Color::hex(TEXT).unwrap(),
+                                color: Color::Srgba(Srgba::hex(TEXT).unwrap()),
                             },
                         ));
                     });
@@ -265,22 +266,25 @@ mod menu {
 
     fn button_system(
         mut interaction_query: Query<
-            (&Interaction, &mut BackgroundColor),
+            (&Interaction, &mut UiImage),
             (Changed<Interaction>, With<Button>),
         >,
         mut state: ResMut<NextState<GameState>>,
     ) {
-        for (interaction, mut color) in &mut interaction_query {
+        for (interaction, mut image) in &mut interaction_query {
             match *interaction {
                 Interaction::Pressed => {
-                    *color = (Color::hex(BUTTON).unwrap() + Color::GRAY).into();
+                    image.color =
+                        (Color::Srgba(Srgba::hex(BUTTON).unwrap() + palettes::css::GRAY)).into();
                     state.set(GameState::Game);
                 }
                 Interaction::Hovered => {
-                    *color = (Color::hex(BUTTON).unwrap() + Color::DARK_GRAY).into();
+                    image.color =
+                        (Color::Srgba(Srgba::hex(BUTTON).unwrap() + palettes::css::DARK_GRAY))
+                            .into();
                 }
                 Interaction::None => {
-                    *color = Color::hex(BUTTON).unwrap().into();
+                    image.color = Color::Srgba(Srgba::hex(BUTTON).unwrap()).into();
                 }
             }
         }
@@ -324,9 +328,7 @@ mod game {
 
     fn setup_game(mut commands: Commands, asset_server: Res<AssetServer>) {
         commands.insert_resource(WinitSettings {
-            focused_mode: UpdateMode::Reactive {
-                wait: Duration::from_secs_f32(0.05),
-            },
+            focused_mode: UpdateMode::reactive(Duration::from_secs_f32(0.05)),
             ..WinitSettings::desktop_app()
         });
         commands.insert_resource(GameStatus {
@@ -340,7 +342,7 @@ mod game {
                 TextStyle {
                     font: asset_server.load("FiraSans-Bold.ttf"),
                     font_size: 50.0,
-                    color: Color::hex(TEXT).unwrap(),
+                    color: Color::Srgba(Srgba::hex(TEXT).unwrap()),
                 },
             )
             .with_style(Style {
@@ -361,7 +363,7 @@ mod game {
                 height: Val::Px(8.0),
                 ..default()
             },
-            background_color: Color::hex(SQUARE).unwrap().into(),
+            background_color: Color::Srgba(Srgba::hex(SQUARE).unwrap()).into(),
             ..default()
         });
     }
@@ -386,7 +388,7 @@ mod game {
             commands.spawn((
                 SpriteBundle {
                     sprite: Sprite {
-                        color: Color::hex(SQUARE).unwrap(),
+                        color: Color::Srgba(Srgba::hex(SQUARE).unwrap()),
                         custom_size: Some(Vec2::splat(rng.gen_range(25.0..50.0))),
                         ..default()
                     },
@@ -507,7 +509,7 @@ mod done {
                         border: UiRect::all(Val::Px(30.0)),
                         ..default()
                     },
-                    background_color: Color::hex(BACKGROUND).unwrap().into(),
+                    background_color: Color::Srgba(Srgba::hex(BACKGROUND).unwrap()).into(),
                     ..default()
                 },
                 DoneTimer(Timer::from_seconds(3.0, TimerMode::Once)),
@@ -518,7 +520,7 @@ mod done {
                     TextStyle {
                         font: asset_server.load("FiraSans-Bold.ttf"),
                         font_size: 40.0,
-                        color: Color::hex(TEXT).unwrap(),
+                        color: Color::Srgba(Srgba::hex(TEXT).unwrap()),
                     },
                 ));
                 parent.spawn(TextBundle::from_section(
@@ -526,7 +528,7 @@ mod done {
                     TextStyle {
                         font: asset_server.load("FiraSans-Bold.ttf"),
                         font_size: 70.0,
-                        color: Color::hex(TEXT).unwrap(),
+                        color: Color::Srgba(Srgba::hex(TEXT).unwrap()),
                     },
                 ));
             });
