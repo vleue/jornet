@@ -2,8 +2,10 @@ use std::collections::HashMap;
 
 use actix_web::{web, HttpResponse, Responder, Scope};
 use biscuit_auth::{
-    builder::{Fact, Term},
-    Authorizer, Biscuit, KeyPair,
+    // builder::{Fact, Term},
+    Authorizer,
+    Biscuit,
+    KeyPair,
 };
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
@@ -21,14 +23,14 @@ pub struct TokenReply {
 }
 
 trait BiscuitFact: Sized {
-    fn as_biscuit_fact(&self) -> Fact;
+    // fn as_biscuit_fact(&self) -> Fact;
     fn from_authorizer(authorizer: &mut Authorizer) -> Option<Self>;
 }
 
 impl BiscuitFact for AdminAccount {
-    fn as_biscuit_fact(&self) -> Fact {
-        Fact::new("user".to_string(), vec![Term::Str(self.id.to_string())])
-    }
+    // fn as_biscuit_fact(&self) -> Fact {
+    //     Fact::new("user".to_string(), vec![Term::Str(self.id.to_string())])
+    // }
 
     fn from_authorizer(authorizer: &mut Authorizer) -> Option<Self> {
         let res: Vec<(String,)> = authorizer.query("data($id) <- user($id)").ok()?;
@@ -141,8 +143,8 @@ pub(crate) fn oauth() -> Scope {
         .route("callback", web::get().to(oauth_callback))
 }
 
-#[derive(Serialize)]
-struct Identity<'a> {
-    admin: &'a AdminAccount,
-    github: Option<GithubUser>,
-}
+// #[derive(Serialize)]
+// struct Identity<'a> {
+//     admin: &'a AdminAccount,
+//     github: Option<GithubUser>,
+// }
