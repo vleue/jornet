@@ -39,7 +39,6 @@ jobs:
           cargo build --profile wasm-release --target wasm32-unknown-unknown --example whac-a-square
           wasm-bindgen --out-dir wasm --out-name demo_leaderboard --target web target/wasm32-unknown-unknown/wasm-release/examples/whac-a-square.wasm
           wasm-opt -Oz wasm/demo_leaderboard_bg.wasm --output wasm/demo_leaderboard_bg-opt.wasm
-          cp -r bevy-jornet/assets jornet-server-ui/public/
           cp wasm/demo_leaderboard_bg-opt.wasm jornet-server-ui/public/demo_leaderboard_bg.wasm
           cp wasm/demo_leaderboard.js jornet-server-ui/public/
 
