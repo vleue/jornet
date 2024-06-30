@@ -52,6 +52,7 @@ features = [
     "bevy_asset",
     "webgl2",
     "bevy_state",
+    "default_font",
 ]
 
 [dev-dependencies]

@@ -70,11 +70,7 @@ mod menu {
         }
     }
 
-    fn display_menu(
-        mut commands: Commands,
-        asset_server: Res<AssetServer>,
-        leaderboard: Res<Leaderboard>,
-    ) {
+    fn display_menu(mut commands: Commands, leaderboard: Res<Leaderboard>) {
         commands.insert_resource(WinitSettings {
             focused_mode: UpdateMode::reactive(Duration::from_secs_f32(0.5)),
             ..WinitSettings::desktop_app()
@@ -89,6 +85,7 @@ mod menu {
                     border: UiRect::all(Val::Px(30.0)),
                     ..default()
                 },
+                border_color: Color::Srgba(Srgba::hex(BACKGROUND).unwrap()).into(),
                 background_color: Color::Srgba(Srgba::hex(BACKGROUND).unwrap()).into(),
                 ..default()
             })
@@ -96,17 +93,17 @@ mod menu {
                 parent.spawn(TextBundle::from_section(
                     "Whac-A-Square",
                     TextStyle {
-                        font: asset_server.load("FiraSans-Bold.ttf"),
                         font_size: 60.0,
                         color: Color::Srgba(Srgba::hex(TEXT).unwrap()),
+                        ..default()
                     },
                 ));
                 parent.spawn(TextBundle::from_section(
                     "Jornet Leaderboard Demo",
                     TextStyle {
-                        font: asset_server.load("FiraSans-Bold.ttf"),
                         font_size: 35.0,
                         color: Color::Srgba(Srgba::hex(TEXT).unwrap()),
+                        ..default()
                     },
                 ));
 
@@ -160,20 +157,19 @@ mod menu {
                             height: Val::Px(65.0),
                             justify_content: JustifyContent::Center,
                             align_items: AlignItems::Center,
-
                             ..default()
                         },
-                        image: UiImage::default()
-                            .with_color(Color::Srgba(Srgba::hex(BUTTON).unwrap())),
+                        border_radius: BorderRadius::all(Val::Px(10.0)),
+                        background_color: Color::Srgba(Srgba::hex(BUTTON).unwrap()).into(),
                         ..default()
                     })
                     .with_children(|parent| {
                         parent.spawn(TextBundle::from_section(
                             "Play",
                             TextStyle {
-                                font: asset_server.load("FiraSans-Bold.ttf"),
                                 font_size: 40.0,
                                 color: Color::Srgba(Srgba::hex(TEXT).unwrap()),
+                                ..default()
                             },
                         ));
                     });
@@ -183,9 +179,9 @@ mod menu {
                 TextSection {
                     value: "you are: ".to_string(),
                     style: TextStyle {
-                        font: asset_server.load("FiraSans-Bold.ttf"),
                         font_size: 20.0,
                         color: Color::Srgba(Srgba::hex(TEXT).unwrap()),
+                        ..default()
                     },
                 },
                 TextSection {
@@ -194,9 +190,9 @@ mod menu {
                         .map(|p| p.name.clone())
                         .unwrap_or_default(),
                     style: TextStyle {
-                        font: asset_server.load("FiraSans-Bold.ttf"),
                         font_size: 25.0,
                         color: Color::Srgba(Srgba::hex(TEXT).unwrap()),
+                        ..default()
                     },
                 },
             ])
@@ -224,7 +220,6 @@ mod menu {
     fn display_scores(
         leaderboard: Res<Leaderboard>,
         mut commands: Commands,
-        asset_server: Res<AssetServer>,
         root_ui: Query<(Entity, &LeaderboardMarker)>,
         mut player_name: Query<&mut Text, With<PlayerName>>,
     ) {
@@ -247,9 +242,9 @@ mod menu {
                                 LeaderboardMarker::Player => score.player.clone(),
                             },
                             TextStyle {
-                                font: asset_server.load("FiraSans-Bold.ttf"),
                                 font_size: 30.0,
                                 color: Color::Srgba(Srgba::hex(TEXT).unwrap()),
+                                ..default()
                             },
                         ));
                     });
@@ -266,25 +261,25 @@ mod menu {
 
     fn button_system(
         mut interaction_query: Query<
-            (&Interaction, &mut UiImage),
+            (&Interaction, &mut BackgroundColor),
             (Changed<Interaction>, With<Button>),
         >,
         mut state: ResMut<NextState<GameState>>,
     ) {
-        for (interaction, mut image) in &mut interaction_query {
+        for (interaction, mut background) in &mut interaction_query {
             match *interaction {
                 Interaction::Pressed => {
-                    image.color =
+                    *background =
                         (Color::Srgba(Srgba::hex(BUTTON).unwrap() + palettes::css::GRAY)).into();
                     state.set(GameState::Game);
                 }
                 Interaction::Hovered => {
-                    image.color =
+                    *background =
                         (Color::Srgba(Srgba::hex(BUTTON).unwrap() + palettes::css::DARK_GRAY))
                             .into();
                 }
                 Interaction::None => {
-                    image.color = Color::Srgba(Srgba::hex(BUTTON).unwrap()).into();
+                    *background = Color::Srgba(Srgba::hex(BUTTON).unwrap()).into();
                 }
             }
         }
@@ -326,7 +321,7 @@ mod game {
         }
     }
 
-    fn setup_game(mut commands: Commands, asset_server: Res<AssetServer>) {
+    fn setup_game(mut commands: Commands) {
         commands.insert_resource(WinitSettings {
             focused_mode: UpdateMode::reactive(Duration::from_secs_f32(0.05)),
             ..WinitSettings::desktop_app()
@@ -340,9 +335,9 @@ mod game {
             TextBundle::from_section(
                 "0",
                 TextStyle {
-                    font: asset_server.load("FiraSans-Bold.ttf"),
                     font_size: 50.0,
                     color: Color::Srgba(Srgba::hex(TEXT).unwrap()),
+                    ..default()
                 },
             )
             .with_style(Style {
@@ -493,11 +488,7 @@ mod done {
     #[derive(Component)]
     struct DoneTimer(Timer);
 
-    fn setup_done(
-        mut commands: Commands,
-        asset_server: Res<AssetServer>,
-        game_status: Res<GameStatus>,
-    ) {
+    fn setup_done(mut commands: Commands, game_status: Res<GameStatus>) {
         commands
             .spawn((
                 NodeBundle {
@@ -509,6 +500,8 @@ mod done {
                         border: UiRect::all(Val::Px(30.0)),
                         ..default()
                     },
+                    border_radius: BorderRadius::all(Val::Px(10.0)),
+                    border_color: Color::Srgba(Srgba::hex(BACKGROUND).unwrap()).into(),
                     background_color: Color::Srgba(Srgba::hex(BACKGROUND).unwrap()).into(),
                     ..default()
                 },
@@ -518,17 +511,17 @@ mod done {
                 parent.spawn(TextBundle::from_section(
                     "Your Score",
                     TextStyle {
-                        font: asset_server.load("FiraSans-Bold.ttf"),
                         font_size: 40.0,
                         color: Color::Srgba(Srgba::hex(TEXT).unwrap()),
+                        ..default()
                     },
                 ));
                 parent.spawn(TextBundle::from_section(
                     format!("{}", game_status.score),
                     TextStyle {
-                        font: asset_server.load("FiraSans-Bold.ttf"),
                         font_size: 70.0,
                         color: Color::Srgba(Srgba::hex(TEXT).unwrap()),
+                        ..default()
                     },
                 ));
             });
