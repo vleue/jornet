@@ -4,7 +4,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use bevy::{
     log::warn,
-    prelude::{Event, EventWriter, ResMut, Resource},
+    prelude::{Event, EventWriter, Reflect, ResMut, Resource},
     tasks::IoTaskPool,
 };
 use hmac::{Hmac, Mac};
@@ -300,7 +300,7 @@ impl ScoreInput {
 }
 
 /// A player, as returned from the server
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Reflect)]
 pub struct Player {
     /// its ID
     pub id: Uuid,
