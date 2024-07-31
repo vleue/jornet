@@ -1396,9 +1396,9 @@ dependencies = [
 
 [[package]]
 name = "biscuit-auth"
-version = "4.1.1"
+version = "5.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "57ef2e2634c5493e5374f70bc45c9c8e5ebb547261973fe72698f6833d4b32ea"
+checksum = "95490f2c91dc452247d00a2fb4779bcedb7693e669354fa1fe2a96679f4950cc"
 dependencies = [
  "base64 0.13.1",
  "biscuit-parser",
