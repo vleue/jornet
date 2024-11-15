@@ -42,7 +42,7 @@ impl Default for GameState {
 }
 
 fn setup(mut commands: Commands, mut leaderboard: ResMut<Leaderboard>) {
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn(Camera2d);
     leaderboard.create_player(None);
 }
 
@@ -76,8 +76,8 @@ mod menu {
             ..WinitSettings::desktop_app()
         });
         commands
-            .spawn(NodeBundle {
-                style: Style {
+            .spawn((
+                Node {
                     margin: UiRect::all(Val::Auto),
                     justify_content: JustifyContent::Center,
                     align_items: AlignItems::Center,
@@ -85,65 +85,54 @@ mod menu {
                     border: UiRect::all(Val::Px(30.0)),
                     ..default()
                 },
-                border_color: Color::Srgba(Srgba::hex(BACKGROUND).unwrap()).into(),
-                background_color: Color::Srgba(Srgba::hex(BACKGROUND).unwrap()).into(),
-                ..default()
-            })
+                BorderColor(Color::Srgba(Srgba::hex(BACKGROUND).unwrap())),
+                BackgroundColor(Color::Srgba(Srgba::hex(BACKGROUND).unwrap())),
+            ))
             .with_children(|parent| {
-                parent.spawn(TextBundle::from_section(
-                    "Whac-A-Square",
-                    TextStyle {
+                parent.spawn((
+                    Text::new("Whac-A-Square"),
+                    TextFont {
                         font_size: 60.0,
-                        color: Color::Srgba(Srgba::hex(TEXT).unwrap()),
                         ..default()
                     },
+                    TextColor(Color::Srgba(Srgba::hex(TEXT).unwrap())),
                 ));
-                parent.spawn(TextBundle::from_section(
-                    "Jornet Leaderboard Demo",
-                    TextStyle {
+                parent.spawn((
+                    Text::new("Jornet Leaderboard Demo"),
+                    TextFont {
                         font_size: 35.0,
-                        color: Color::Srgba(Srgba::hex(TEXT).unwrap()),
                         ..default()
                     },
+                    TextColor(Color::Srgba(Srgba::hex(TEXT).unwrap())),
                 ));
 
                 parent
-                    .spawn(NodeBundle {
-                        style: Style {
-                            flex_direction: FlexDirection::Row,
-                            justify_content: JustifyContent::Center,
-                            align_items: AlignItems::Center,
-                            margin: UiRect::all(Val::Px(20.0)),
-                            ..default()
-                        },
+                    .spawn(Node {
+                        flex_direction: FlexDirection::Row,
+                        justify_content: JustifyContent::Center,
+                        align_items: AlignItems::Center,
+                        margin: UiRect::all(Val::Px(20.0)),
                         ..default()
                     })
                     .with_children(|parent| {
                         parent.spawn((
-                            NodeBundle {
-                                style: Style {
-                                    width: Val::Px(300.0),
-                                    flex_direction: FlexDirection::Column,
-                                    justify_content: JustifyContent::Center,
-                                    align_items: AlignItems::Center,
-                                    margin: UiRect::all(Val::Px(20.0)),
-                                    ..default()
-                                },
-
+                            Node {
+                                width: Val::Px(300.0),
+                                flex_direction: FlexDirection::Column,
+                                justify_content: JustifyContent::Center,
+                                align_items: AlignItems::Center,
+                                margin: UiRect::all(Val::Px(20.0)),
                                 ..default()
                             },
                             LeaderboardMarker::Player,
                         ));
                         parent.spawn((
-                            NodeBundle {
-                                style: Style {
-                                    width: Val::Px(150.0),
-                                    flex_direction: FlexDirection::Column,
-                                    justify_content: JustifyContent::Center,
-                                    align_items: AlignItems::Center,
-                                    margin: UiRect::all(Val::Px(20.0)),
-                                    ..default()
-                                },
+                            Node {
+                                width: Val::Px(150.0),
+                                flex_direction: FlexDirection::Column,
+                                justify_content: JustifyContent::Center,
+                                align_items: AlignItems::Center,
+                                margin: UiRect::all(Val::Px(20.0)),
                                 ..default()
                             },
                             LeaderboardMarker::Score,
@@ -151,59 +140,63 @@ mod menu {
                     });
 
                 parent
-                    .spawn(ButtonBundle {
-                        style: Style {
+                    .spawn((
+                        Button,
+                        Node {
                             width: Val::Px(150.0),
                             height: Val::Px(65.0),
                             justify_content: JustifyContent::Center,
                             align_items: AlignItems::Center,
                             ..default()
                         },
-                        border_radius: BorderRadius::all(Val::Px(10.0)),
-                        background_color: Color::Srgba(Srgba::hex(BUTTON).unwrap()).into(),
-                        ..default()
-                    })
+                        BorderRadius::all(Val::Px(10.0)),
+                        BackgroundColor(Color::Srgba(Srgba::hex(BUTTON).unwrap())),
+                    ))
                     .with_children(|parent| {
-                        parent.spawn(TextBundle::from_section(
-                            "Play",
-                            TextStyle {
+                        parent.spawn((
+                            Text::new("Play"),
+                            TextFont {
                                 font_size: 40.0,
-                                color: Color::Srgba(Srgba::hex(TEXT).unwrap()),
                                 ..default()
                             },
+                            TextColor(Color::Srgba(Srgba::hex(TEXT).unwrap())),
                         ));
                     });
             });
-        commands.spawn((
-            TextBundle::from_sections([
-                TextSection {
-                    value: "you are: ".to_string(),
-                    style: TextStyle {
+        commands
+            .spawn((
+                Text::default(),
+                Node {
+                    position_type: PositionType::Absolute,
+                    left: Val::Px(10.0),
+                    bottom: Val::Px(10.0),
+                    ..default()
+                },
+                PlayerName,
+            ))
+            .with_children(|text| {
+                text.spawn((
+                    TextSpan::new("you are: "),
+                    TextFont {
                         font_size: 20.0,
-                        color: Color::Srgba(Srgba::hex(TEXT).unwrap()),
                         ..default()
                     },
-                },
-                TextSection {
-                    value: leaderboard
-                        .get_player()
-                        .map(|p| p.name.clone())
-                        .unwrap_or_default(),
-                    style: TextStyle {
+                    TextColor(Color::Srgba(Srgba::hex(TEXT).unwrap())),
+                ));
+                text.spawn((
+                    TextSpan::new(
+                        leaderboard
+                            .get_player()
+                            .map(|p| p.name.clone())
+                            .unwrap_or_default(),
+                    ),
+                    TextFont {
                         font_size: 25.0,
-                        color: Color::Srgba(Srgba::hex(TEXT).unwrap()),
                         ..default()
                     },
-                },
-            ])
-            .with_style(Style {
-                position_type: PositionType::Absolute,
-                left: Val::Px(10.0),
-                bottom: Val::Px(10.0),
-                ..default()
-            }),
-            PlayerName,
-        ));
+                    TextColor(Color::Srgba(Srgba::hex(TEXT).unwrap())),
+                ));
+            });
 
         leaderboard.refresh_leaderboard();
     }
@@ -221,11 +214,12 @@ mod menu {
         leaderboard: Res<Leaderboard>,
         mut commands: Commands,
         root_ui: Query<(Entity, &LeaderboardMarker)>,
-        mut player_name: Query<&mut Text, With<PlayerName>>,
+        player_name: Query<Entity, With<PlayerName>>,
+        mut text_writer: TextUiWriter,
     ) {
         if leaderboard.is_changed() {
             if let Some(player) = leaderboard.get_player() {
-                player_name.single_mut().sections[1].value = player.name.clone();
+                *text_writer.text(player_name.single(), 2) = player.name.clone();
             }
             let mut leaderboard = leaderboard.get_leaderboard();
             leaderboard.sort_unstable_by(|s1, s2| {
@@ -236,16 +230,16 @@ mod menu {
                 commands.entity(root_entity).despawn_descendants();
                 for score in &leaderboard {
                     commands.entity(root_entity).with_children(|parent| {
-                        parent.spawn(TextBundle::from_section(
-                            match marker {
+                        parent.spawn((
+                            Text::new(match marker {
                                 LeaderboardMarker::Score => format!("{} ", score.score),
                                 LeaderboardMarker::Player => score.player.clone(),
-                            },
-                            TextStyle {
-                                font_size: 30.0,
-                                color: Color::Srgba(Srgba::hex(TEXT).unwrap()),
+                            }),
+                            TextFont {
+                                font_size: 20.0,
                                 ..default()
                             },
+                            TextColor(Color::Srgba(Srgba::hex(TEXT).unwrap())),
                         ));
                     });
                 }
@@ -331,25 +325,23 @@ mod game {
             time_to_click: Timer::from_seconds(10.0, TimerMode::Once),
             since_start: Stopwatch::new(),
         });
-        commands.spawn(
-            TextBundle::from_section(
-                "0",
-                TextStyle {
-                    font_size: 50.0,
-                    color: Color::Srgba(Srgba::hex(TEXT).unwrap()),
-                    ..default()
-                },
-            )
-            .with_style(Style {
+        commands.spawn((
+            Text::new("0"),
+            TextFont {
+                font_size: 50.0,
+                ..default()
+            },
+            TextColor(Color::Srgba(Srgba::hex(TEXT).unwrap())),
+            Node {
                 align_self: AlignSelf::FlexEnd,
                 position_type: PositionType::Absolute,
                 top: Val::Px(10.0),
                 left: Val::Px(15.0),
                 ..default()
-            }),
-        );
-        commands.spawn(NodeBundle {
-            style: Style {
+            },
+        ));
+        commands.spawn((
+            Node {
                 align_self: AlignSelf::FlexEnd,
                 position_type: PositionType::Absolute,
                 top: Val::Px(0.0),
@@ -358,9 +350,8 @@ mod game {
                 height: Val::Px(8.0),
                 ..default()
             },
-            background_color: Color::Srgba(Srgba::hex(SQUARE).unwrap()).into(),
-            ..default()
-        });
+            BackgroundColor(Color::Srgba(Srgba::hex(SQUARE).unwrap())),
+        ));
     }
 
     #[derive(Component)]
@@ -377,23 +368,19 @@ mod game {
             return;
         };
         let mut rng = rand::thread_rng();
-        if rng.gen_bool(time.delta_seconds_f64().min(1.0)) {
+        if rng.gen_bool(time.delta_secs_f64().min(1.0)) {
             let width = primary_window.width() / 2.0 - 50.0;
             let height = primary_window.height() / 2.0 - 50.0;
             commands.spawn((
-                SpriteBundle {
-                    sprite: Sprite {
-                        color: Color::Srgba(Srgba::hex(SQUARE).unwrap()),
-                        custom_size: Some(Vec2::splat(rng.gen_range(25.0..50.0))),
-                        ..default()
-                    },
-                    transform: Transform::from_xyz(
-                        rng.gen_range(-width..width),
-                        rng.gen_range(-height..height),
-                        0.0,
-                    ),
-                    ..default()
-                },
+                Sprite::from_color(
+                    Color::Srgba(Srgba::hex(SQUARE).unwrap()),
+                    Vec2::splat(rng.gen_range(25.0..50.0)),
+                ),
+                Transform::from_xyz(
+                    rng.gen_range(-width..width),
+                    rng.gen_range(-height..height),
+                    0.0,
+                ),
                 SquareTimer(Timer::from_seconds(
                     rng.gen_range(2.0..10.0),
                     TimerMode::Once,
@@ -441,11 +428,11 @@ mod game {
     fn game_state(
         mut status: ResMut<GameStatus>,
         mut score_text: Query<&mut Text>,
-        mut timer: Query<&mut Style, Without<Text>>,
+        mut timer: Query<&mut Node, Without<Text>>,
         time: Res<Time>,
         mut state: ResMut<NextState<GameState>>,
     ) {
-        score_text.single_mut().sections[0].value = format!("{}", status.score);
+        score_text.single_mut().0 = format!("{}", status.score);
         timer.single_mut().width = Val::Px(status.time_to_click.fraction_remaining() * 200.0);
         status.since_start.tick(time.delta());
         if status.time_to_click.tick(time.delta()).just_finished() {
@@ -491,38 +478,35 @@ mod done {
     fn setup_done(mut commands: Commands, game_status: Res<GameStatus>) {
         commands
             .spawn((
-                NodeBundle {
-                    style: Style {
-                        margin: UiRect::all(Val::Auto),
-                        justify_content: JustifyContent::Center,
-                        align_items: AlignItems::Center,
-                        flex_direction: FlexDirection::Column,
-                        border: UiRect::all(Val::Px(30.0)),
-                        ..default()
-                    },
-                    border_radius: BorderRadius::all(Val::Px(10.0)),
-                    border_color: Color::Srgba(Srgba::hex(BACKGROUND).unwrap()).into(),
-                    background_color: Color::Srgba(Srgba::hex(BACKGROUND).unwrap()).into(),
+                Node {
+                    margin: UiRect::all(Val::Auto),
+                    justify_content: JustifyContent::Center,
+                    align_items: AlignItems::Center,
+                    flex_direction: FlexDirection::Column,
+                    border: UiRect::all(Val::Px(30.0)),
                     ..default()
                 },
+                BorderRadius::all(Val::Px(10.0)),
+                BorderColor(Color::Srgba(Srgba::hex(BACKGROUND).unwrap())),
+                BackgroundColor(Color::Srgba(Srgba::hex(BACKGROUND).unwrap())),
                 DoneTimer(Timer::from_seconds(3.0, TimerMode::Once)),
             ))
             .with_children(|parent| {
-                parent.spawn(TextBundle::from_section(
-                    "Your Score",
-                    TextStyle {
+                parent.spawn((
+                    Text::new("Your Score"),
+                    TextFont {
                         font_size: 40.0,
-                        color: Color::Srgba(Srgba::hex(TEXT).unwrap()),
                         ..default()
                     },
+                    TextColor(Color::Srgba(Srgba::hex(TEXT).unwrap())),
                 ));
-                parent.spawn(TextBundle::from_section(
-                    format!("{}", game_status.score),
-                    TextStyle {
+                parent.spawn((
+                    Text::new(format!("{}", game_status.score)),
+                    TextFont {
                         font_size: 70.0,
-                        color: Color::Srgba(Srgba::hex(TEXT).unwrap()),
                         ..default()
                     },
+                    TextColor(Color::Srgba(Srgba::hex(TEXT).unwrap())),
                 ));
             });
     }
