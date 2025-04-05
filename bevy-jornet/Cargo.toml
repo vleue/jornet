@@ -1,6 +1,6 @@
 [package]
 name = "bevy_jornet"
-version = "0.9.0"
+version = "0.10.0-rc.3"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 description = "Bevy plugin for Jornet - a social game server"
@@ -11,17 +11,17 @@ repository = "https://github.com/vleue/jornet/tree/main/bevy-jornet"
 homepage = "https://jornet.vleue.com"
 documentation = "https://docs.rs/bevy_jornet"
 
-[dependencies.bevy]
-version = "0.15.0"
-default-features = false
-
 [dependencies]
+bevy_ecs = { version = "0.16.0-rc.3", default-features = false }
+bevy_app = { version = "0.16.0-rc.3", default-features = false }
+bevy_tasks = { version = "0.16.0-rc.3", default-features = false }
 uuid = { version = "1.8", features = ["v4", "serde"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 hmac = "0.12"
 sha2 = "0.10"
 hex = "0.4"
+log = "0.4"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 ureq = { version = "2.5", features = ["json"] }
@@ -40,7 +40,7 @@ wasm-bindgen-futures = "0.4"
 js-sys = "0.3"
 
 [dev-dependencies.bevy]
-version = "0.15.0"
+version = "0.16.0-rc.3"
 default-features = false
 features = [
     "bevy_winit",

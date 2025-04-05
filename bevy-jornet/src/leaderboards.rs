@@ -2,12 +2,14 @@ use std::sync::{Arc, RwLock};
 #[cfg(not(target_arch = "wasm32"))]
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use bevy::{
-    log::warn,
-    prelude::{Event, EventWriter, ResMut, Resource},
-    tasks::IoTaskPool,
+use bevy_ecs::{
+    event::{Event, EventWriter},
+    resource::Resource,
+    system::ResMut,
 };
+use bevy_tasks::IoTaskPool;
 use hmac::{Hmac, Mac};
+use log::warn;
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;
 use uuid::Uuid;
@@ -327,7 +329,7 @@ pub fn send_events(leaderboard: ResMut<Leaderboard>, mut event_writer: EventWrit
     {
         let mut events = leaderboard.events.write().unwrap();
         for event in events.drain(..) {
-            event_writer.send(event);
+            event_writer.write(event);
         }
     }
 }

@@ -6,7 +6,8 @@
 //! - save high scores
 //! - get a leaderboard
 
-use bevy::prelude::{App, IntoSystemConfigs, Plugin, Update};
+use bevy_app::{App, Plugin, Update};
+use bevy_ecs::schedule::IntoScheduleConfigs;
 use leaderboards::send_events;
 pub use leaderboards::Leaderboard;
 use uuid::Uuid;
