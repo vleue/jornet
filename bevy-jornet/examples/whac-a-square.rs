@@ -219,7 +219,7 @@ mod menu {
     ) {
         if leaderboard.is_changed() {
             if let Some(player) = leaderboard.get_player() {
-                *text_writer.text(player_name.single(), 2) = player.name.clone();
+                *text_writer.text(player_name.single().unwrap(), 2) = player.name.clone();
             }
             let mut leaderboard = leaderboard.get_leaderboard();
             leaderboard.sort_unstable_by(|s1, s2| {
@@ -227,7 +227,7 @@ mod menu {
             });
             leaderboard.truncate(10);
             for (root_entity, marker) in &root_ui {
-                commands.entity(root_entity).despawn_descendants();
+                commands.entity(root_entity).despawn_related::<Children>();
                 for score in &leaderboard {
                     commands.entity(root_entity).with_children(|parent| {
                         parent.spawn((
@@ -247,9 +247,12 @@ mod menu {
         }
     }
 
-    fn despawn_menu(mut commands: Commands, root_ui: Query<Entity, (With<Node>, Without<Parent>)>) {
+    fn despawn_menu(
+        mut commands: Commands,
+        root_ui: Query<Entity, (With<Node>, Without<ChildOf>)>,
+    ) {
         for entity in &root_ui {
-            commands.entity(entity).despawn_recursive();
+            commands.entity(entity).despawn();
         }
     }
 
@@ -364,7 +367,7 @@ mod game {
         time: Res<Time>,
         mut squares: Query<(Entity, &mut SquareTimer)>,
     ) {
-        let Ok(primary_window) = primary_window_query.get_single() else {
+        let Ok(primary_window) = primary_window_query.single() else {
             return;
         };
         let mut rng = rand::thread_rng();
@@ -403,7 +406,7 @@ mod game {
         primary_window_query: Query<&Window, With<PrimaryWindow>>,
     ) {
         if mouse_input.get_just_pressed().next().is_some() {
-            let Ok(primary_window) = primary_window_query.get_single() else {
+            let Ok(primary_window) = primary_window_query.single() else {
                 return;
             };
             let mut clicked_at = primary_window.cursor_position().unwrap();
@@ -432,8 +435,9 @@ mod game {
         time: Res<Time>,
         mut state: ResMut<NextState<GameState>>,
     ) {
-        score_text.single_mut().0 = format!("{}", status.score);
-        timer.single_mut().width = Val::Px(status.time_to_click.fraction_remaining() * 200.0);
+        score_text.single_mut().unwrap().0 = format!("{}", status.score);
+        timer.single_mut().unwrap().width =
+            Val::Px(status.time_to_click.fraction_remaining() * 200.0);
         status.since_start.tick(time.delta());
         if status.time_to_click.tick(time.delta()).just_finished() {
             state.set(GameState::Done);
@@ -516,12 +520,18 @@ mod done {
         mut timer: Query<&mut DoneTimer>,
         mut state: ResMut<NextState<GameState>>,
     ) {
-        if timer.single_mut().0.tick(time.delta()).just_finished() {
+        if timer
+            .single_mut()
+            .unwrap()
+            .0
+            .tick(time.delta())
+            .just_finished()
+        {
             state.set(GameState::Menu);
         }
     }
 
     fn clear_done(mut commands: Commands, ui: Query<Entity, With<DoneTimer>>) {
-        commands.entity(ui.single()).despawn_recursive();
+        commands.entity(ui.single().unwrap()).despawn();
     }
 }
