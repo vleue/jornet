@@ -1,0 +1,25 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id FROM scores WHERE leaderboard = $1 AND player = $2 AND score = $3 AND timestamp = TO_TIMESTAMP($4)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Float4",
+        "Float8"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "e68481e60222376c1fb43deb5e74558b7f7c0508f9df8ae05a11121084209f5d"
+}

@@ -1,0 +1,34 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT leaderboards.id, name, count(scores.leaderboard) FROM leaderboards LEFT JOIN scores ON leaderboards.id = scores.leaderboard WHERE owner = $1 GROUP BY leaderboards.id;",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "count",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      null
+    ]
+  },
+  "hash": "7f5f8834589e0e4b60ebbf58a60878de26134dfb24ac100ab849b06c5b97b8c8"
+}

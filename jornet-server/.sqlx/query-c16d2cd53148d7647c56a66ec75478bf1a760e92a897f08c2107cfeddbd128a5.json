@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT admin_id FROM admins_github WHERE id = $1 AND login = $2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "admin_id",
+        "type_info": "Uuid"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "c16d2cd53148d7647c56a66ec75478bf1a760e92a897f08c2107cfeddbd128a5"
+}
