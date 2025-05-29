@@ -2,7 +2,7 @@ name: Server Release
 
 on:
   push:
-    tags:        
+    tags:
       - jornet-server-v**
       - jornet-ui-v**
       - bevy_jornet-v**
@@ -24,7 +24,7 @@ jobs:
           git config user.name "GitHub Actions"
           git config user.email noreply@github.com
           git checkout -b release-clever
-          
+
       - name: install tools
         run: |
           cargo install wasm-bindgen-cli
@@ -38,7 +38,7 @@ jobs:
 
           cargo build --profile wasm-release --target wasm32-unknown-unknown --example whac-a-square
           wasm-bindgen --out-dir wasm --out-name demo_leaderboard --target web target/wasm32-unknown-unknown/wasm-release/examples/whac-a-square.wasm
-          wasm-opt -Oz wasm/demo_leaderboard_bg.wasm --output wasm/demo_leaderboard_bg-opt.wasm
+          wasm-opt -Os wasm/demo_leaderboard_bg.wasm --output wasm/demo_leaderboard_bg-opt.wasm
           cp wasm/demo_leaderboard_bg-opt.wasm jornet-server-ui/public/demo_leaderboard_bg.wasm
           cp wasm/demo_leaderboard.js jornet-server-ui/public/
 
