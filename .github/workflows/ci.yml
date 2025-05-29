@@ -27,6 +27,7 @@ jobs:
     env:
       SQLX_VERSION: 0.6.0
       SQLX_FEATURES: postgres
+      DATABASE_URL: "postgres://postgres:password@localhost:5432/jornet"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -52,7 +53,7 @@ jobs:
             ~/.cargo/bin/cargo-sqlx
           key: ${{ runner.os }}-sqlx-${{ env.SQLX_VERSION }}-${{ env.SQLX_FEATURES }}
 
-      - name: Install sqlx-cli 
+      - name: Install sqlx-cli
         if: steps.cache-sqlx.outputs.cache-hit == false
         run: cargo install sqlx-cli --force --version=${{ env.SQLX_VERSION }} --features=${{ env.SQLX_FEATURES }} --locked
 
@@ -105,7 +106,7 @@ jobs:
             ~/.cargo/bin/sqlx
           key: ${{ runner.os }}-sqlx-${{ env.SQLX_VERSION }}-${{ env.SQLX_FEATURES }}
 
-      - name: Install sqlx-cli 
+      - name: Install sqlx-cli
         if: steps.cache-sqlx.outputs.cache-hit == false
         run: cargo install sqlx-cli --force --version=${{ env.SQLX_VERSION }} --features=${{ env.SQLX_FEATURES }} --locked
 
