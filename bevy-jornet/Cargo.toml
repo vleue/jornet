@@ -1,60 +1,6 @@
 [package]
-name = "bevy_jornet"
-version = "0.10.1"
-edition = "2021"
-license = "MIT OR Apache-2.0"
-description = "Bevy plugin for Jornet - a social game server"
-categories = ["game-development"]
-keywords = ["bevy", "social", "leaderboard", "score"]
-exclude = ["assets/", "leaderboard.png"]
-repository = "https://github.com/vleue/jornet/tree/main/bevy-jornet"
-homepage = "https://jornet.vleue.com"
-documentation = "https://docs.rs/bevy_jornet"
+name = "bevy-jornet"
+version = "0.1.0"
+edition = "2024"
 
 [dependencies]
-bevy_ecs = { version = "0.16.0", default-features = false }
-bevy_app = { version = "0.16.0", default-features = false }
-bevy_tasks = { version = "0.16.0", default-features = false }
-uuid = { version = "1.8", features = ["v4", "serde"] }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-hmac = "0.12"
-sha2 = "0.10"
-hex = "0.4"
-log = "0.4"
-
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-ureq = { version = "2.5", features = ["json"] }
-
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-wasm-bindgen = { version = "0.2" }
-serde-wasm-bindgen = "0.6"
-web-sys = { version = "0.3", features = [
-    "Request",
-    "Window",
-    "Response",
-    "Headers",
-    "RequestInit",
-] }
-wasm-bindgen-futures = "0.4"
-js-sys = "0.3"
-
-[dev-dependencies.bevy]
-version = "0.16.0"
-default-features = false
-features = [
-    "bevy_winit",
-    "bevy_window",
-    "bevy_core_pipeline",
-    "bevy_render",
-    "bevy_sprite",
-    "bevy_text",
-    "bevy_ui",
-    "bevy_asset",
-    "webgl2",
-    "bevy_state",
-    "default_font",
-]
-
-[dev-dependencies]
-rand = "0.8"

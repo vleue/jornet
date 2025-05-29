@@ -1,11 +1,6 @@
 [package]
 name = "jornet-cli"
 version = "0.1.0"
-edition = "2021"
-license = "MIT OR Apache-2.0"
-publish = false
+edition = "2024"
 
 [dependencies]
-biscuit-auth = "4.0"
-base64 = "0.22"
-clap = { version = "4.4", features = ["derive"] }
