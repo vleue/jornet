@@ -33,16 +33,16 @@ pub(crate) async fn post<T: Serialize, U: DeserializeOwned>(url: &str, body: T) 
 #[cfg(target_arch = "wasm32")]
 async fn request<B: Serialize, R: DeserializeOwned>(url: &str, body: Option<B>) -> Option<R> {
     let mut headers = HashMap::new();
-    let mut opts = RequestInit::new();
+    let opts = RequestInit::new();
     if body.is_some() {
         headers.insert("Content-Type", "application/json");
-        opts.method("POST")
-            .body(Some(&JsValue::from_str(
-                // serializing the body - can't fail
-                &serde_json::to_string(&body).unwrap(),
-            )))
-            // building headers - can't fail
-            .headers(&serde_wasm_bindgen::to_value(&headers).unwrap());
+        opts.set_method("POST");
+        opts.set_body(&JsValue::from_str(
+            // serializing the body - can't fail
+            &serde_json::to_string(&body).unwrap(),
+        ));
+        // building headers - can't fail
+        opts.set_headers(&serde_wasm_bindgen::to_value(&headers).unwrap());
     }
 
     // building the request - can't fail
