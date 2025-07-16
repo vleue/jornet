@@ -6,6 +6,6 @@ license = "MIT OR Apache-2.0"
 publish = false
 
 [dependencies]
-biscuit-auth = "4.0"
+biscuit-auth = "6.0"
 base64 = "0.22"
 clap = { version = "4.4", features = ["derive"] }
