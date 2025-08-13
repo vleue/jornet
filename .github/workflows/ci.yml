@@ -30,7 +30,7 @@ jobs:
       DATABASE_URL: "postgres://postgres:password@localhost:5432/jornet"
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Cache dependencies
         id: cache-dependencies
@@ -72,7 +72,7 @@ jobs:
     name: Rust format
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@stable
       - name: run cargo fmt
         run: cargo fmt --all -- --check
@@ -94,7 +94,7 @@ jobs:
       SQLX_FEATURES: postgres
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - uses: dtolnay/rust-toolchain@stable
 
@@ -125,7 +125,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: build
         run: |
