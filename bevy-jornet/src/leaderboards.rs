@@ -3,7 +3,7 @@ use std::sync::{Arc, RwLock};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use bevy_ecs::{
-    event::{Event, EventWriter},
+    message::{Message, MessageWriter},
     resource::Resource,
     system::ResMut,
 };
@@ -17,7 +17,7 @@ use uuid::Uuid;
 use crate::http;
 
 /// Bevy Event that is sent when calls to Jornet finish.
-#[derive(Clone, Copy, PartialEq, Eq, Event, Debug)]
+#[derive(Clone, Copy, PartialEq, Eq, Message, Debug)]
 pub enum JornetEvent {
     /// A call to [`send_score`] succeeded.
     SendScoreSuccess,
@@ -320,7 +320,7 @@ struct PlayerInput {
 /// System to send bevy events for results from any tasks.
 /// It is automatically added by the [`JornetPlugin`](crate::JornetPlugin) in stage
 /// [`CoreStage::Update`](bevy::prelude::CoreStage).
-pub fn send_events(leaderboard: ResMut<Leaderboard>, mut event_writer: EventWriter<JornetEvent>) {
+pub fn send_events(leaderboard: ResMut<Leaderboard>, mut event_writer: MessageWriter<JornetEvent>) {
     if !leaderboard
         .events
         .try_read()
