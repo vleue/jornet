@@ -49,6 +49,7 @@ jobs:
         env:
           JORNET_LEADERBOARD_ID: ${{ secrets.JORNET_LEADERBOARD_ID }}
           JORNET_LEADERBOARD_KEY: ${{ secrets.JORNET_LEADERBOARD_KEY }}
+          RUSTFLAGS: --cfg getrandom_backend="wasm_js"
 
       - name: remove other crates to reduce dependencies
         run: |

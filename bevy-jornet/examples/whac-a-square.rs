@@ -85,7 +85,7 @@ mod menu {
                     border: UiRect::all(Val::Px(30.0)),
                     ..default()
                 },
-                BorderColor(Color::Srgba(Srgba::hex(BACKGROUND).unwrap())),
+                BorderColor::all(Color::Srgba(Srgba::hex(BACKGROUND).unwrap())),
                 BackgroundColor(Color::Srgba(Srgba::hex(BACKGROUND).unwrap())),
             ))
             .with_children(|parent| {
@@ -370,22 +370,22 @@ mod game {
         let Ok(primary_window) = primary_window_query.single() else {
             return;
         };
-        let mut rng = rand::thread_rng();
-        if rng.gen_bool(time.delta_secs_f64().min(1.0)) {
+        let mut rng = rand::rng();
+        if rng.random_bool(time.delta_secs_f64().min(1.0)) {
             let width = primary_window.width() / 2.0 - 50.0;
             let height = primary_window.height() / 2.0 - 50.0;
             commands.spawn((
                 Sprite::from_color(
                     Color::Srgba(Srgba::hex(SQUARE).unwrap()),
-                    Vec2::splat(rng.gen_range(25.0..50.0)),
+                    Vec2::splat(rng.random_range(25.0..50.0)),
                 ),
                 Transform::from_xyz(
-                    rng.gen_range(-width..width),
-                    rng.gen_range(-height..height),
+                    rng.random_range(-width..width),
+                    rng.random_range(-height..height),
                     0.0,
                 ),
                 SquareTimer(Timer::from_seconds(
-                    rng.gen_range(2.0..10.0),
+                    rng.random_range(2.0..10.0),
                     TimerMode::Once,
                 )),
             ));
@@ -491,7 +491,7 @@ mod done {
                     ..default()
                 },
                 BorderRadius::all(Val::Px(10.0)),
-                BorderColor(Color::Srgba(Srgba::hex(BACKGROUND).unwrap())),
+                BorderColor::all(Color::Srgba(Srgba::hex(BACKGROUND).unwrap())),
                 BackgroundColor(Color::Srgba(Srgba::hex(BACKGROUND).unwrap())),
                 DoneTimer(Timer::from_seconds(3.0, TimerMode::Once)),
             ))

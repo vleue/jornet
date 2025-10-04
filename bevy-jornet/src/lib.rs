@@ -52,7 +52,7 @@ impl Plugin for JornetPlugin {
     fn build(&self, app: &mut App) {
         let leaderboard =
             Leaderboard::with_host_and_leaderboard(self.host.clone(), self.leaderboard, self.key);
-        app.add_event::<JornetEvent>()
+        app.add_message::<JornetEvent>()
             .insert_resource(leaderboard)
             .add_systems(Update, done_refreshing_leaderboard)
             .add_systems(Update, send_events.after(done_refreshing_leaderboard));
