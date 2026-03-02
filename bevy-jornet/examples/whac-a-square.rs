@@ -147,9 +147,9 @@ mod menu {
                             height: Val::Px(65.0),
                             justify_content: JustifyContent::Center,
                             align_items: AlignItems::Center,
+                            border_radius: BorderRadius::all(Val::Px(10.0)),
                             ..default()
                         },
-                        BorderRadius::all(Val::Px(10.0)),
                         BackgroundColor(Color::Srgba(Srgba::hex(BUTTON).unwrap())),
                     ))
                     .with_children(|parent| {
@@ -488,9 +488,9 @@ mod done {
                     align_items: AlignItems::Center,
                     flex_direction: FlexDirection::Column,
                     border: UiRect::all(Val::Px(30.0)),
+                    border_radius: BorderRadius::all(Val::Px(10.0)),
                     ..default()
                 },
-                BorderRadius::all(Val::Px(10.0)),
                 BorderColor::all(Color::Srgba(Srgba::hex(BACKGROUND).unwrap())),
                 BackgroundColor(Color::Srgba(Srgba::hex(BACKGROUND).unwrap())),
                 DoneTimer(Timer::from_seconds(3.0, TimerMode::Once)),
