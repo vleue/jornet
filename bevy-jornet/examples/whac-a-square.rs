@@ -51,7 +51,10 @@ mod menu {
 
     use bevy::{
         color::palettes,
+        picking::hover::Hovered,
         prelude::*,
+        ui::Pressed,
+        ui_widgets::{observe, Activate, Button},
         winit::{UpdateMode, WinitSettings},
     };
     use bevy_jornet::Leaderboard;
@@ -92,7 +95,7 @@ mod menu {
                 parent.spawn((
                     Text::new("Whac-A-Square"),
                     TextFont {
-                        font_size: 60.0,
+                        font_size: FontSize::Px(60.0),
                         ..default()
                     },
                     TextColor(Color::Srgba(Srgba::hex(TEXT).unwrap())),
@@ -100,7 +103,7 @@ mod menu {
                 parent.spawn((
                     Text::new("Jornet Leaderboard Demo"),
                     TextFont {
-                        font_size: 35.0,
+                        font_size: FontSize::Px(35.0),
                         ..default()
                     },
                     TextColor(Color::Srgba(Srgba::hex(TEXT).unwrap())),
@@ -142,21 +145,27 @@ mod menu {
                 parent
                     .spawn((
                         Button,
+                        Hovered::default(),
                         Node {
                             width: Val::Px(150.0),
                             height: Val::Px(65.0),
                             justify_content: JustifyContent::Center,
                             align_items: AlignItems::Center,
+                            border_radius: BorderRadius::all(Val::Px(10.0)),
                             ..default()
                         },
-                        BorderRadius::all(Val::Px(10.0)),
                         BackgroundColor(Color::Srgba(Srgba::hex(BUTTON).unwrap())),
+                        observe(
+                            |_activate: On<Activate>, mut state: ResMut<NextState<GameState>>| {
+                                state.set(GameState::Game);
+                            },
+                        ),
                     ))
                     .with_children(|parent| {
                         parent.spawn((
                             Text::new("Play"),
                             TextFont {
-                                font_size: 40.0,
+                                font_size: FontSize::Px(40.0),
                                 ..default()
                             },
                             TextColor(Color::Srgba(Srgba::hex(TEXT).unwrap())),
@@ -178,7 +187,7 @@ mod menu {
                 text.spawn((
                     TextSpan::new("you are: "),
                     TextFont {
-                        font_size: 20.0,
+                        font_size: FontSize::Px(20.0),
                         ..default()
                     },
                     TextColor(Color::Srgba(Srgba::hex(TEXT).unwrap())),
@@ -191,7 +200,7 @@ mod menu {
                             .unwrap_or_default(),
                     ),
                     TextFont {
-                        font_size: 25.0,
+                        font_size: FontSize::Px(25.0),
                         ..default()
                     },
                     TextColor(Color::Srgba(Srgba::hex(TEXT).unwrap())),
@@ -236,7 +245,7 @@ mod menu {
                                 LeaderboardMarker::Player => score.player.clone(),
                             }),
                             TextFont {
-                                font_size: 20.0,
+                                font_size: FontSize::Px(20.0),
                                 ..default()
                             },
                             TextColor(Color::Srgba(Srgba::hex(TEXT).unwrap())),
@@ -257,25 +266,20 @@ mod menu {
     }
 
     fn button_system(
-        mut interaction_query: Query<
-            (&Interaction, &mut BackgroundColor),
-            (Changed<Interaction>, With<Button>),
-        >,
-        mut state: ResMut<NextState<GameState>>,
+        mut button_query: Query<(&Hovered, Has<Pressed>, &mut BackgroundColor), With<Button>>,
     ) {
-        for (interaction, mut background) in &mut interaction_query {
-            match *interaction {
-                Interaction::Pressed => {
+        for (hovered, pressed, mut background) in &mut button_query {
+            match (hovered.get(), pressed) {
+                (_, true) => {
                     *background =
                         (Color::Srgba(Srgba::hex(BUTTON).unwrap() + palettes::css::GRAY)).into();
-                    state.set(GameState::Game);
                 }
-                Interaction::Hovered => {
+                (true, false) => {
                     *background =
                         (Color::Srgba(Srgba::hex(BUTTON).unwrap() + palettes::css::DARK_GRAY))
                             .into();
                 }
-                Interaction::None => {
+                (false, false) => {
                     *background = Color::Srgba(Srgba::hex(BUTTON).unwrap()).into();
                 }
             }
@@ -294,8 +298,8 @@ mod game {
     use std::time::Duration;
 
     use bevy::{
-        math::bounding::{Aabb2d, IntersectsVolume},
         prelude::*,
+        shape::{Aabb2d, IntersectsVolume},
         time::Stopwatch,
         window::PrimaryWindow,
         winit::{UpdateMode, WinitSettings},
@@ -331,7 +335,7 @@ mod game {
         commands.spawn((
             Text::new("0"),
             TextFont {
-                font_size: 50.0,
+                font_size: FontSize::Px(50.0),
                 ..default()
             },
             TextColor(Color::Srgba(Srgba::hex(TEXT).unwrap())),
@@ -488,9 +492,9 @@ mod done {
                     align_items: AlignItems::Center,
                     flex_direction: FlexDirection::Column,
                     border: UiRect::all(Val::Px(30.0)),
+                    border_radius: BorderRadius::all(Val::Px(10.0)),
                     ..default()
                 },
-                BorderRadius::all(Val::Px(10.0)),
                 BorderColor::all(Color::Srgba(Srgba::hex(BACKGROUND).unwrap())),
                 BackgroundColor(Color::Srgba(Srgba::hex(BACKGROUND).unwrap())),
                 DoneTimer(Timer::from_seconds(3.0, TimerMode::Once)),
@@ -499,7 +503,7 @@ mod done {
                 parent.spawn((
                     Text::new("Your Score"),
                     TextFont {
-                        font_size: 40.0,
+                        font_size: FontSize::Px(40.0),
                         ..default()
                     },
                     TextColor(Color::Srgba(Srgba::hex(TEXT).unwrap())),
@@ -507,7 +511,7 @@ mod done {
                 parent.spawn((
                     Text::new(format!("{}", game_status.score)),
                     TextFont {
-                        font_size: 70.0,
+                        font_size: FontSize::Px(70.0),
                         ..default()
                     },
                     TextColor(Color::Srgba(Srgba::hex(TEXT).unwrap())),
